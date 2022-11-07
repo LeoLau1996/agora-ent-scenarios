@@ -171,8 +171,8 @@
         
         listModel.creator = outputModel.creator;
         VLKTVViewController *ktvVC = [[VLKTVViewController alloc]init];
-        ktvVC.roomModel = listModel;
-        ktvVC.seatsArray = outputModel.seatsArray;
+        ktvVC.viewModel.roomModel = listModel;
+        ktvVC.viewModel.seatsArray = outputModel.seatsArray;
         [weakSelf.navigationController pushViewController:ktvVC animated:YES];
     }];
 }

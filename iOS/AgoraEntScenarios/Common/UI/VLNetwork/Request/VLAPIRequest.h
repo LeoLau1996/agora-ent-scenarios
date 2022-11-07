@@ -24,7 +24,24 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (void)postRequestURL:(NSString *)url parameter:(id)parameter showHUD:(BOOL)show success:(completeBlock_success)success failure:(errorBlock_fail)failure;
 
-+ (void)requestRoute:(NSString *)route showHUD:(BOOL)show method:(NSString *)method parameter:(id)json requestType:(VLRequestType)type progressBlock:(progressBlock)progressBlock completeBlock:(completeBlock_success)completeBlock errorBlock:(errorBlock_fail)errorBlock;
+
++ (void)requestRoute:(NSString *)route
+             showHUD:(BOOL)show
+              method:(NSString *)method
+           parameter:(id)json
+         requestType:(VLRequestType)type
+       progressBlock:(progressBlock)progressBlock
+       completeBlock:(completeBlock_success)completeBlock
+          errorBlock:(errorBlock_fail)errorBlock;
+
++ (void)requestWithUrl:(NSString *)url
+             showHUD:(BOOL)show
+              method:(NSString *)method
+           parameter:(id)json
+         requestType:(VLRequestType)type
+       progressBlock:(progressBlock)progressBlock
+       completeBlock:(completeBlock_success)completeBlock
+            errorBlock:(errorBlock_fail)errorBlock;
 
 #pragma mark -- 直接获取图片
 + (void)requestImageRoute:(NSString *)route  method:(NSString *)method parameter:(id)json requestType:(VLRequestType)type progressBlock:(progressBlock)progressBlock completeBlock:(completeImageBlock_success)completeBlock errorBlock:(errorBlock_fail)errorBlock;

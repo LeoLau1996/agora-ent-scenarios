@@ -82,7 +82,10 @@
             @"current":@(self.page)
         };
         
-        [VLAPIRequest getRequestURL:kURLGetSongsList parameter:param showHUD:NO success:^(VLResponseDataModel * _Nonnull response) {
+        [VLAPIRequest getRequestURL:kURLGetSongsList
+                          parameter:param
+                            showHUD:NO
+                            success:^(VLResponseDataModel * _Nonnull response) {
             if (response.code == 0) {
                 [self.tableView.mj_header endRefreshing];
                 self.page += 1;

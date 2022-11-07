@@ -88,8 +88,8 @@
         listModel.name = outputModel.name;
         listModel.bgOption = 0;
         VLKTVViewController *ktvVC = [[VLKTVViewController alloc]init];
-        ktvVC.roomModel = listModel;
-        ktvVC.seatsArray = outputModel.seatsArray;
+        ktvVC.viewModel.roomModel = listModel;
+        ktvVC.viewModel.seatsArray = outputModel.seatsArray;
         [self.navigationController pushViewController:ktvVC animated:YES];
     }];
 }

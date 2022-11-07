@@ -5,17 +5,12 @@
 
 #import "BaseViewController.h"
 #import "KTVServiceProtocol.h"
+#import "VLKTVViewModel.h"
 
 NS_ASSUME_NONNULL_BEGIN
-@class VLRoomListModel;
-@class VLRoomSeatModel;
 
 @interface VLKTVViewController : BaseViewController
-
-@property (nonatomic, strong) VLRoomListModel *roomModel;
-//麦位数组
-@property (nonatomic, strong) NSArray <VLRoomSeatModel *> *seatsArray;
-
+@property (nonatomic, strong) VLKTVViewModel* viewModel;
 @end
 
 NS_ASSUME_NONNULL_END

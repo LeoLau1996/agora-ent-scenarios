@@ -61,8 +61,34 @@ static AFHTTPSessionManager *_sessionManager;
 }
 
 
-+ (void)requestRoute:(NSString *)route showHUD:(BOOL)show method:(NSString *)method parameter:(id)json requestType:(VLRequestType)type progressBlock:(progressBlock)progressBlock completeBlock:(completeBlock_success)completeBlock errorBlock:(errorBlock_fail)errorBlock {
++ (void)requestRoute:(NSString *)route
+             showHUD:(BOOL)show
+              method:(NSString *)method
+           parameter:(id)json
+         requestType:(VLRequestType)type
+       progressBlock:(progressBlock)progressBlock
+       completeBlock:(completeBlock_success)completeBlock
+          errorBlock:(errorBlock_fail)errorBlock {
     NSString *url = [self doRoute:route andMethod:method];
+    
+    [self requestWithUrl:url
+                 showHUD:show
+                  method:method
+               parameter:json
+             requestType:type
+           progressBlock:progressBlock
+           completeBlock:completeBlock
+              errorBlock:errorBlock];
+}
+
++ (void)requestWithUrl:(NSString *)url
+             showHUD:(BOOL)show
+              method:(NSString *)method
+           parameter:(id)json
+         requestType:(VLRequestType)type
+       progressBlock:(progressBlock)progressBlock
+       completeBlock:(completeBlock_success)completeBlock
+          errorBlock:(errorBlock_fail)errorBlock {
     url = [url stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]];
     if (json == nil) json = @{};
     
@@ -111,7 +137,14 @@ static AFHTTPSessionManager *_sessionManager;
         [self addSessionTask:sessionTask];
     }
 }
-+ (void)requestImageRoute:(NSString *)route  method:(NSString *)method parameter:(id)json requestType:(VLRequestType)type progressBlock:(progressBlock)progressBlock completeBlock:(completeImageBlock_success)completeBlock errorBlock:(errorBlock_fail)errorBlock {
+
++ (void)requestImageRoute:(NSString *)route
+                   method:(NSString *)method
+                parameter:(id)json
+              requestType:(VLRequestType)type
+            progressBlock:(progressBlock)progressBlock
+            completeBlock:(completeImageBlock_success)completeBlock
+               errorBlock:(errorBlock_fail)errorBlock {
     
     NSString *url = [self doRoute:route andMethod:method];
     url = [url stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]];
@@ -135,9 +168,7 @@ static AFHTTPSessionManager *_sessionManager;
             NSLog(@"GET REQUEST ERROR\n,url=%@\n,error=%@",task.currentRequest.URL,error);
             [self requestError:errorBlock error:error task:task];
         }];
-        
     }
-
 }
 
 + (NSDictionary *)dicWithResponseData:(NSData *)res {
