@@ -11,4 +11,8 @@
     <string name="show_live_perms_leak_tip" >缺少直播需要的权限，是否重新申请？</string>
     <string name="show_live_yes">是</string>
     <string name="show_live_no">否</string>
+    <string name="show_cohosting_request_message">申请消息</string>
+    <string name="show_online_audience">在线观众</string>
+    <string name="show_agree_onseat">同意上麦</string>
+    <string name="show_application">邀请</string>
 </resources>
