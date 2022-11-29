@@ -682,8 +682,8 @@ reportAudioVolumeIndicationOfSpeakers:(NSArray<AgoraRtcAudioVolumeInfo *> *)spea
 //                                uid:[VLUserCenter.user.id integerValue]
 //                        joinSuccess:^(NSString * _Nonnull channel, NSUInteger uid, NSInteger elapsed) {
     AgoraRtcChannelMediaOptions *options = [AgoraRtcChannelMediaOptions new];
-    options.publishCameraTrack = [AgoraRtcBoolOptional of:NO];
-    options.publishMicrophoneTrack = [AgoraRtcBoolOptional of:ifRequestOnSeat];
+//    options.publishCameraTrack = [AgoraRtcBoolOptional of:NO];
+//    options.publishMicrophoneTrack = [AgoraRtcBoolOptional of:ifRequestOnSeat];
     [self.RTCkit joinChannelByToken:VLUserCenter.user.agoraRTCToken
                           channelId:self.roomModel.roomNo
                                 uid:[VLUserCenter.user.id integerValue]
@@ -701,8 +701,8 @@ reportAudioVolumeIndicationOfSpeakers:(NSArray<AgoraRtcAudioVolumeInfo *> *)spea
     contentCenterConfiguration.rtcEngine = self.RTCkit;
     contentCenterConfiguration.appId = [[AppContext shared] appId];
     contentCenterConfiguration.mccUid = [VLUserCenter.user.id integerValue];
-    contentCenterConfiguration.rtmToken = VLUserCenter.user.agoraRTMToken;
-    VLLog(@"AgoraMcc: %@, %@\n", contentCenterConfiguration.appId, contentCenterConfiguration.rtmToken);
+//    contentCenterConfiguration.rtmToken = VLUserCenter.user.agoraRTMToken;
+//    VLLog(@"AgoraMcc: %@, %@\n", contentCenterConfiguration.appId, contentCenterConfiguration.rtmToken);
     self.AgoraMcc = [AgoraMusicContentCenter sharedContentCenterWithConfig:contentCenterConfiguration];
     [self.AgoraMcc registerEventDelegate:self];
 
@@ -1080,14 +1080,15 @@ reportAudioVolumeIndicationOfSpeakers:(NSArray<AgoraRtcAudioVolumeInfo *> *)spea
 
 - (void)enableMic
 {
-    AgoraRtcChannelMediaOptions *option = [[AgoraRtcChannelMediaOptions alloc] init];
-    option.publishMicrophoneTrack = [AgoraRtcBoolOptional of:self.isNowMicMuted];
-    option.publishCameraTrack = [AgoraRtcBoolOptional of:(self.isNowCameraMuted?NO:YES)];
-    [self.RTCkit updateChannelWithMediaOptions:option];
+//    AgoraRtcChannelMediaOptions *option = [[AgoraRtcChannelMediaOptions alloc] init];
+//    option.publishMicrophoneTrack = [AgoraRtcBoolOptional of:self.isNowMicMuted];
+//    option.publishCameraTrack = [AgoraRtcBoolOptional of:(self.isNowCameraMuted?NO:YES)];
+//    [self.RTCkit updateChannelWithMediaOptions:option];
 }
 
 #pragma mark --底部按钮的点击事件
 - (void)bottomSetAudioMute:(NSInteger)ifMute{
+    /*
     if (ifMute == 1) {
         AgoraRtcChannelMediaOptions *option = [[AgoraRtcChannelMediaOptions alloc] init];
         option.publishMicrophoneTrack = [AgoraRtcBoolOptional of:NO];
@@ -1109,6 +1110,7 @@ reportAudioVolumeIndicationOfSpeakers:(NSArray<AgoraRtcAudioVolumeInfo *> *)spea
         self.isNowMicMuted = NO;
     }
     [self.MVView validateSingType];
+     */
 }
 
 - (void)bottomSetVideoMute:(NSInteger)ifOpen{
@@ -3051,7 +3053,9 @@ reportAudioVolumeIndicationOfSpeakers:(NSArray<AgoraRtcAudioVolumeInfo *> *)spea
 #pragma mark - Seperate media player channel control
 
 - (AgoraRtcConnection *)enableMediaChannel:(BOOL)doPublish {
+    
     AgoraRtcChannelMediaOptions *option = [AgoraRtcChannelMediaOptions new];
+    /*
     [option setClientRoleType:[AgoraRtcIntOptional of:AgoraClientRoleBroadcaster]];
     [option setPublishCameraTrack:[AgoraRtcBoolOptional of:NO]];
     [option setPublishCustomAudioTrack:[AgoraRtcBoolOptional of:NO]];
@@ -3064,7 +3068,7 @@ reportAudioVolumeIndicationOfSpeakers:(NSArray<AgoraRtcAudioVolumeInfo *> *)spea
 
     [option setPublishMediaPlayerId:[AgoraRtcIntOptional of:[self.rtcMediaPlayer getMediaPlayerId]]];
     [option setPublishMediaPlayerAudioTrack:[AgoraRtcBoolOptional of:doPublish]];
-    
+    */
     AgoraRtcConnection *connection = [AgoraRtcConnection new];
     connection.channelId = self.roomModel.roomNo;
     connection.localUid = [VLGlobalHelper getAgoraPlayerUserId:VLUserCenter.user.id];
