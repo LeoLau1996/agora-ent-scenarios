@@ -1192,6 +1192,10 @@ receiveStreamMessageFromUid:(NSUInteger)uid
     return self.currentTime;
 }
 
+- (double)getPitch {
+    return self.currentVoicePitch;
+}
+
 #pragma mark - MVViewDelegate
 // 打分实时回调
 - (void)onKTVMVView:(VLKTVMVView *)view scoreDidUpdate:(int)score {
