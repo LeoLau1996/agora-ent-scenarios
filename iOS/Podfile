@@ -71,6 +71,7 @@ pod 'AgoraRtcEngine_iOS', :path => './libs'
   pod 'SVGAPlayer'
   pod 'KakaJSON'
   pod 'Agora_Chat_iOS'
+  pod 'Bugly'
 end
 
 target 'AgoraEntScenarios' do
