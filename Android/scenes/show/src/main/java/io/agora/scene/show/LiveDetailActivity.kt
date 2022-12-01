@@ -7,20 +7,25 @@ import android.view.LayoutInflater
 import android.view.SurfaceView
 import androidx.activity.ComponentActivity
 import androidx.appcompat.app.AlertDialog
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import io.agora.rtc2.*
 import io.agora.rtc2.video.VideoCanvas
 import io.agora.scene.base.TokenGenerator
 import io.agora.scene.base.manager.UserManager
+import io.agora.scene.base.utils.LiveDataUtils
 import io.agora.scene.base.utils.ToastUtils
 import io.agora.scene.show.databinding.ShowLiveDetailActivityBinding
-import io.agora.scene.show.service.ShowRoomDetailModel
-import io.agora.scene.show.service.ShowServiceProtocol
+import io.agora.scene.show.service.*
 import io.agora.scene.show.utils.PermissionHelp
+import io.agora.scene.show.widget.link.LiveLinkDialog
+import io.agora.scene.show.widget.link.OnLinkDialogActionListener
+import io.agora.scene.show.widget.UserItem
 import io.agora.scene.widget.utils.StatusBarUtil
 import java.text.SimpleDateFormat
 import java.util.*
 
-class LiveDetailActivity : ComponentActivity() {
+class LiveDetailActivity : ComponentActivity(), OnLinkDialogActionListener {
 
     companion object {
         private val EXTRA_ROOM_DETAIL_INFO = "roomDetailInfo"
@@ -198,5 +203,222 @@ class LiveDetailActivity : ComponentActivity() {
         )
     }
 
+    // TODO HUGO
+    val seatApplyList: MutableLiveData<List<ShowMicSeatApply>> = MutableLiveData<List<ShowMicSeatApply>>()
+    // ----------------------------------- 连麦申请 -----------------------------------
+    public fun initMicSeatApply() {
+        mService.subscribeMicSeatApply({ status, apply -> {
 
+            }
+        })
+    }
+
+    // 获取上麦申请列表
+    public fun getAllMicSeatApplyList() : LiveData<List<ShowMicSeatApply>> {
+        var liveData = MutableLiveData<List<ShowMicSeatApply>>()
+        mService.getAllMicSeatApplyList({ list ->
+            run {
+                // success
+                liveData.postValue(list)
+            }
+        }, { e -> run {
+            // failed
+            seatApplyList.postValue(null)
+        }})
+        return liveData
+    }
+
+    // 观众申请连麦
+    public fun createMicSeatApply() {
+        mService.createMicSeatApply({
+            // success
+        }, { e -> {
+            // failed
+        }})
+    }
+
+    // 观众取消连麦申请
+    public fun cancelMicSeatApply() {
+        mService.cancelMicSeatApply({
+            // success
+        }, { e -> {
+            // failed
+        }})
+    }
+
+    // 主播接受连麦申请
+    public fun acceptMicSeatApply(apply: ShowMicSeatApply) : LiveData<Boolean> {
+        val liveData = MutableLiveData<Boolean>()
+        mService.acceptMicSeatApply(apply, {
+            // success
+            liveData.postValue(true)
+        }, { e -> {
+            // failed
+            liveData.postValue(false)
+        }})
+        return liveData;
+    }
+
+    // 主播拒绝连麦申请
+    public fun rejectMicSeatApply(apply: ShowMicSeatApply) {
+        mService.rejectMicSeatApply(apply, {
+            // success
+        }, { e -> {
+            // failed
+        }})
+    }
+
+    // ----------------------------------- 连麦邀请 -----------------------------------
+    public fun initSeatInvitation() {
+
+    }
+
+    public fun getAllMicSeatInvitationList() {
+        mService.getAllMicSeatInvitationList({
+            // success
+        }, { e -> {
+            // failed
+        }})
+    }
+
+    // 主播创建连麦邀请
+    public fun createMicSeatInvitation(user: ShowUser) {
+        mService.createMicSeatInvitation(user, {
+            // success
+        }, { e -> {
+            // failed
+        }})
+    }
+
+    // 主播取消连麦邀请
+    public fun cancelMicSeatInvitation(userId: String) {
+        mService.cancelMicSeatInvitation(userId, {
+            // success
+        }, { e -> {
+            // failed
+        }})
+    }
+
+    // 观众同意连麦
+    public fun acceptMicSeatInvitation() {
+        mService.acceptMicSeatInvitation({
+            // success
+        }, { e -> {
+            // failed
+        }})
+    }
+
+    // 观众拒绝连麦
+    public fun rejectMicSeatInvitation() {
+        mService.rejectMicSeatInvitation({
+            // success
+        }, { e -> {
+            // failed
+        }})
+    }
+
+    // ----------------------------------- pk邀请 -----------------------------------
+    public fun initPKInvitation() {
+
+    }
+
+    public fun getAllPKInvitationList() {
+        mService.getAllPKInvitationList({
+            // success
+        }, { e -> {
+            // failed
+        }})
+    }
+
+    // 创建PK邀请
+    public fun createPKInvitation(room: ShowRoomListModel) {
+        mService.createPKInvitation(room, {
+            // success
+        }, { e -> {
+            // failed
+        }})
+    }
+
+    // 同意PK
+    public fun acceptPKInvitation() {
+        mService.acceptPKInvitation({
+            // success
+        }, { e -> {
+            // failed
+        }})
+    }
+
+    // 拒绝PK
+    public fun rejectPKInvitation() {
+        mService.rejectPKInvitation({
+            // success
+        }, { e -> {
+            // failed
+        }})
+    }
+
+    // ----------------------------------- 互动状态 -----------------------------------
+    public fun initInteration() {
+
+    }
+
+    // 获取互动列表
+    public fun getAllInterationList() {
+        mService.getAllInterationList({
+            // success
+        }, { e -> {
+            // failed
+        }})
+    }
+
+    // 停止互动
+    public fun stopInteraction(interaction: ShowInteractionInfo) {
+        mService.stopInteraction(interaction, {
+            // success
+        }, { e -> {
+            // failed
+        }})
+    }
+
+    // ------------- override OnLinkDialogActionListener -------------
+    // 下拉刷新连麦请求列表
+    override fun onRequestMessageRefreshing(dialog: LiveLinkDialog, index: Int) {
+        LiveDataUtils.observerThenRemove(
+            this,
+            getAllMicSeatApplyList()
+        ) { list -> run {
+                //dialog.setSeatApplyList(list)
+            }
+        }
+    }
+
+    // 主播点击接受连麦
+    override fun onAcceptMicSeatApplyChosen(dialog: LiveLinkDialog, userItem: UserItem) {
+        val apply = ShowMicSeatApply(
+            userItem.userId,
+            userItem.userAvatar,
+            userItem.userName,
+            ShowRoomRequestStatus.accepted
+        )
+        LiveDataUtils.observerThenRemove(
+            this,
+            acceptMicSeatApply(apply)
+        ) { success: Boolean ->
+            if (success) {
+                dialog.setSeatApplyItemStatus(null, true)
+            }
+        }
+    }
+
+    override fun onOnlineAudienceRefreshing(dialog: LiveLinkDialog, index: Int) {
+        //TODO("Not yet implemented")
+    }
+
+    override fun onOnlineAudienceChosen(dialog: LiveLinkDialog, userItem: UserItem) {
+        //TODO("Not yet implemented")
+    }
+
+    override fun onStopLinkingChosen(dialog: LiveLinkDialog) {
+        //TODO("Not yet implemented")
+    }
 }

@@ -6,10 +6,17 @@ enum class ShowRoomStatus(val value: Int) {
 }
 
 enum class ShowRoomRequestStatus(val value: Int){
-    watitting(1),// 等待中
-    accept(2),//  已接受
-    refuse(3),// 已拒绝
-    end(4)// 已结束
+    idle(0),
+    waitting(1),// 等待中
+    accepted(2),//  已接受
+    rejected(3),// 已拒绝
+    ended(4)// 已结束
+}
+
+enum class ShowInteractionStatus(val value: Int) {
+    idle(0), /// 空闲
+    onSeat(1), /// 连麦中
+    pking(2) /// pk中
 }
 
 // 房间详情信息
@@ -41,7 +48,8 @@ data class ShowRoomDetailModel(
 data class ShowUser(
     val userId: String,
     val avatar: String,
-    val userName: String
+    val userName: String,
+    val status: ShowRoomRequestStatus = ShowRoomRequestStatus.idle //申请状态
 )
 
 // 聊天消息
@@ -58,27 +66,53 @@ data class ShowMicSeatApply(
     val userAvatar: String,
     val userName: String,
     val status: ShowRoomRequestStatus,
-    val createAt: Double
+    val createAt: Double = System.currentTimeMillis().toDouble()
 )
 
 // 连麦邀请
 data class ShowMicSeatInvitation(
     val userId: String,
-    val userAvatar: String,
+    val avatar: String,
     val userName: String,
-    val fromUserId: String,
-    val status: ShowRoomRequestStatus,
-    val createAt: Double
+    val status: ShowRoomRequestStatus = ShowRoomRequestStatus.idle //申请状态
 )
 
 // PK邀请
 data class ShowPKInvitation(
     val userId: String,
+    var userName: String,
     val roomId: String,
     val fromUserId: String,
     val fromName: String,
     val fromRoomId: String,
     val status: ShowRoomRequestStatus,
-    val createAt: Double
+    var userMuteAudio: Boolean,      //userId静音状态
+    var fromUserMuteAudio: Boolean,
+    val createAt: Double = System.currentTimeMillis().toDouble()
 )
 
+//房间列表信息
+data class ShowRoomListModel(
+    val roomId: String,                                //房间号
+    val roomName: String,                             //房间名
+    val roomUserCount: Int,                       //房间人数
+    val thumbnailId: String,                         //缩略图id
+    val ownerId: String,                             //房主user id (rtc uid)
+    val ownerAvater: String,                           //房主头像
+    val ownerName: String,                            //房主名
+    val roomStatus: ShowRoomStatus,         //直播状态
+    val interactStatus: ShowInteractionStatus,  //互动状态
+    val createdAt: Long,                          //创建时间，与19700101时间比较的毫秒数
+    val updatedAt: Long = System.currentTimeMillis()  //更新时间
+)
+
+//连麦/Pk模型
+data class ShowInteractionInfo(
+    val userId: String,                                 //用户id (rtc uid) pk是另一个房间的房主uid，连麦是连麦观众uid
+    val userName: String,
+    val roomId: String,                                 //用户所在房间id
+    val interactStatus: ShowInteractionStatus,       //交互类型
+    var muteAudio: Boolean = false,                  //userId静音状态
+    var ownerMuteAudio: Boolean = false,             //房主静音状态（后续拆成两条interation info的muteAudio）
+    val createdAt: Long = System.currentTimeMillis()  //创建时间, 与19700101时间比较的毫秒数
+)
