@@ -115,10 +115,11 @@ class ShowLiveViewController: UIViewController {
         guard let channelName = room?.roomId, let uid: UInt = UInt(currentUserId), let ownerId = room?.ownerId else {
             return
         }
+        settingManager = ShowSettingManager(agoraKit: agoraKitManager.agoraKit)
+        
         let ret = agoraKitManager.joinChannel(channelName: channelName, uid: uid, ownerId: ownerId, canvasView: liveView.canvasView.localView)
         if ret == 0 {
             print("进入房间")
-            settingManager = ShowSettingManager(agoraKit: agoraKitManager.agoraKit)
         }else{
             print("进入房间失败=====\(ret.debugDescription)")
             showError(title: "Join room failed", errMsg: "Error \(ret.debugDescription) occur")
