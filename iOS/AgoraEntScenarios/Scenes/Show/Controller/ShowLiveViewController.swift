@@ -15,6 +15,8 @@ class ShowLiveViewController: UIViewController {
     
     var selectedResolution = 1
     
+    var audiencePresetType: ShowPresetType?
+    
     private lazy var settingMenuVC: ShowToolMenuViewController = {
         let settingMenuVC = ShowToolMenuViewController()
         settingMenuVC.type = ShowMenuType.idle_audience
@@ -23,7 +25,9 @@ class ShowLiveViewController: UIViewController {
     }()
     
     lazy var agoraKitManager: ShowAgoraKitManager = {
-        return ShowAgoraKitManager()
+        let manager = ShowAgoraKitManager()
+        manager.defaultSetting()
+        return manager
     }()
     
 //    private var settingManager: ShowSettingManager?
@@ -45,10 +49,10 @@ class ShowLiveViewController: UIViewController {
     }
     
     // 音乐
-//    private lazy var musicManager: ShowMusicManager? = {
-//        guard let agorakit = agoraKitManager.agoraKit else { return nil }
-//        return ShowMusicManager(agoraKit: agorakit)
-//    }()
+    private lazy var musicManager: ShowMusicManager? = {
+        guard let agorakit = agoraKitManager.agoraKit else { return nil }
+        return ShowMusicManager(agoraKit: agorakit)
+    }()
     
     private lazy var liveView: ShowRoomLiveView = {
         let view = ShowRoomLiveView(isBroadcastor: role == .broadcaster)
@@ -101,6 +105,10 @@ class ShowLiveViewController: UIViewController {
         }
     }
     
+    deinit {
+        print("----ShowLiveViewController-销毁了------")
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         view.layer.contents = UIImage.show_sceneImage(name: "show_live_pkbg")?.cgImage
@@ -141,6 +149,10 @@ class ShowLiveViewController: UIViewController {
     private func joinChannel() {
         agoraKitManager.delegate = self
 //        agoraKitManager.defaultSetting()
+        // 观众端模式设置
+        if role == .audience, let type = audiencePresetType {
+            agoraKitManager.updatePresetForType(type, mode: .signle)
+        }
         guard let channelName = room?.roomId, let uid: UInt = UInt(currentUserId), let ownerId = room?.ownerId else {
             return
         }
@@ -302,9 +314,7 @@ extension ShowLiveViewController: ShowSubscribeServiceProtocol {
     func onMicSeatInvitationUpdated(invitation: ShowMicSeatInvitation) {
         guard invitation.userId == VLUserCenter.user.id else { return }
         if invitation.status == .waitting {
-            let vc = ShowReceivePKAlertVC()
-            vc.name = invitation.userName ?? ""
-            vc.dismissWithResult { result in
+            ShowReceivePKAlertVC.present(name: invitation.userName, style: .mic) { result in
                 let imp = AppContext.showServiceImp
                 switch result {
                 case .accept:
@@ -317,8 +327,9 @@ extension ShowLiveViewController: ShowSubscribeServiceProtocol {
                     break
                 }
             }
-            
-            self.present(vc, animated: true)
+        }
+        if invitation.status == .ended {
+            ToastView.show(text: "连麦已断开哦".show_localized)
         }
     }
     
@@ -347,6 +358,9 @@ extension ShowLiveViewController: ShowSubscribeServiceProtocol {
     }
     
     func onPKInvitationUpdated(invitation: ShowPKInvitation) {
+        if invitation.status == .ended {
+            ToastView.show(text: "PK已断开哦".show_localized)
+        }
         if invitation.fromRoomId == room?.roomId {
             //send invitation
             createPKInvitationMap[invitation.roomId ?? ""] = invitation
@@ -357,9 +371,7 @@ extension ShowLiveViewController: ShowSubscribeServiceProtocol {
         
         //recv invitation
         if invitation.status == .waitting {
-            let vc = ShowReceivePKAlertVC()
-            vc.name = invitation.fromName ?? ""
-            vc.dismissWithResult { result in
+            ShowReceivePKAlertVC.present(name: invitation.fromName) { result in
                 let imp = AppContext.showServiceImp
                 switch result {
                 case .accept:
@@ -374,8 +386,6 @@ extension ShowLiveViewController: ShowSubscribeServiceProtocol {
                     break
                 }
             }
-            
-            self.present(vc, animated: true)
         }
     }
     
@@ -414,6 +424,12 @@ extension ShowLiveViewController: ShowSubscribeServiceProtocol {
     }
     
     func onInterationUpdated(interaction: ShowInteractionInfo) {
+        guard let model = interactionList?.filter( { $0.objectId == interaction.objectId}).first else {
+            return
+        }
+        model.ownerMuteAudio = interaction.ownerMuteAudio
+        model.muteAudio = interaction.muteAudio
+        currentInteraction = model
         liveView.canvasView.isLocalMuteMic = interaction.ownerMuteAudio
         liveView.canvasView.isRemoteMuteMic = interaction.muteAudio
     }
@@ -488,8 +504,7 @@ extension ShowLiveViewController: ShowSubscribeServiceProtocol {
         default:
             break
         }
-        let text = interaction.interactStatus == .pking ? "PK已断开哦".show_localized : "连麦已断开哦".show_localized
-        ToastView.show(text: text)
+        ToastView.show(text: interaction.interactStatus.toastTitle)
         agoraKitManager.agoraKit.updateChannel(with: options)
         
     }
@@ -585,6 +600,7 @@ extension ShowLiveViewController: ShowRoomLiveViewDelegate {
         guard let info = interactionList?.first else { return }
         let menuVC = ShowToolMenuViewController()
         menuVC.type = ShowMenuType.managerMic
+        menuVC.selectedMap = [.mute_mic: info.muteAudio]
         menuVC.menuTitle = "对观众\(info.userName ?? "")"
         menuVC.delegate = self
         present(menuVC, animated: true)
@@ -627,7 +643,7 @@ extension ShowLiveViewController: ShowRoomLiveViewDelegate {
     
     func onClickMusicButton() {
         let vc = ShowMusicEffectVC()
-        vc.musicManager = agoraKitManager
+        vc.musicManager = musicManager
         present(vc, animated: true)
     }
     
