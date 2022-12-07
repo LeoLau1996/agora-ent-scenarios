@@ -7,8 +7,22 @@
 
 import Foundation
 
-protocol ShowSubscribeServiceProtocol: NSObject {
+public enum ShowServiceConnectState: Int {
+    case connecting = 0
+    case open = 1
+    case fail = 2
+    case closed = 3
+}
 
+protocol ShowSubscribeServiceProtocol: NSObject {
+    
+    
+    /// 房间过期
+    func onRoomExpired()
+    
+    /// 网络状态变化
+    /// - Parameter state: <#state description#>
+    func onConnectStateChanged(state: ShowServiceConnectState)
     
     /// 房间内用户数变化
     /// - Parameter userCount: <#userCount description#>
@@ -86,4 +100,9 @@ protocol ShowSubscribeServiceProtocol: NSObject {
     /// pk/连麦被停止
     /// - Parameter interaction: <#interaction description#>
     func onInterationEnded(interaction: ShowInteractionInfo)
+    
+    
+    /// pk/连麦被更新(静音等)
+    /// - Parameter interaction: <#interaction description#>
+    func onInterationUpdated(interaction: ShowInteractionInfo)
 }

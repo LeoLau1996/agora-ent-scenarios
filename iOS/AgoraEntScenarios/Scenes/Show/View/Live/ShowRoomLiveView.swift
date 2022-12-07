@@ -10,6 +10,7 @@ import UIKit
 protocol ShowRoomLiveViewDelegate: ShowRoomBottomBarDelegate {
     func onClickSendMsgButton(text: String)
     func onClickCloseButton()
+    func onClickRemoteCanvas()
 }
 
 class ShowRoomLiveView: UIView {
@@ -22,7 +23,11 @@ class ShowRoomLiveView: UIView {
     var room: ShowRoomListModel? {
         didSet{
             roomInfoView.setRoomInfo(avatar: room?.ownerAvater, name: room?.roomName, id: room?.roomId, time: room?.createdAt)
-            self.roomUserCount = room?.roomUserCount ?? 1
+            guard let count = room?.roomUserCount else {
+                roomUserCount = 1
+                return
+            }
+            self.roomUserCount = count
         }
     }
     
@@ -31,7 +36,13 @@ class ShowRoomLiveView: UIView {
             bottomBar.delegate = delegate
         }
     }
-    lazy var canvasView = ShowCanvasView()
+    lazy var canvasView: ShowCanvasView = {
+        let view = ShowCanvasView()
+        view.onTapRemoteCanvasClosure = { [weak self] in
+            self?.delegate?.onClickRemoteCanvas()
+        }
+        return view
+    }()
     
     private var chatArray = [ShowChatModel]()
     
@@ -148,12 +159,14 @@ class ShowRoomLiveView: UIView {
         chatInputView.snp.makeConstraints { make in
             make.left.right.equalToSuperview()
             make.height.equalTo(56)
-            make.centerY.equalTo(bottomBar)
+            make.bottom.equalToSuperview()
         }
     }
     
     @objc private func didClickChatButton() {
         chatInputView.isHidden = false
+        bottomBar.isHidden = true
+        chatButton.isHidden = true
         chatInputView.textField.becomeFirstResponder()
     }
     
@@ -198,6 +211,8 @@ extension ShowRoomLiveView: ShowChatInputViewDelegate {
     
     func onEndEditing() {
         chatInputView.isHidden = true
+        bottomBar.isHidden = false
+        chatButton.isHidden = false
     }
 
     func onClickEmojiButton() {
@@ -205,6 +220,10 @@ extension ShowRoomLiveView: ShowChatInputViewDelegate {
     }
     
     func onClickSendButton(text: String) {
+        if text.count > 80 {
+            ToastView.show(text: "show_live_chat_text_length_beyond_bounds".show_localized)
+            return
+        }
         delegate?.onClickSendMsgButton(text: text)
     }
     

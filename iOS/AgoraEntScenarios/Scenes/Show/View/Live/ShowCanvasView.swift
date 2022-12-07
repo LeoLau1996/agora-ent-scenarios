@@ -15,10 +15,15 @@ enum ShowLiveCanvasType {
 }
 
 class ShowCanvasView: UIView {
+    var onTapRemoteCanvasClosure: (() -> Void)?
+    
     lazy var localView = UIView()
     lazy var remoteView: UIView = {
         let view = UIView()
         view.isHidden = true
+//        view.addTarget(self, action: #selector(onTapRemoteButton), for: .touchUpInside)
+        let tap = UITapGestureRecognizer(target: self, action: #selector(onTapRemoteButton))
+        view.addGestureRecognizer(tap)
         return view
     }()
     
@@ -212,5 +217,10 @@ class ShowCanvasView: UIView {
         pkView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 15).isActive = true
         pkView.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -15).isActive = true
         pkView.topAnchor.constraint(equalTo: remoteView.bottomAnchor, constant: 12).isActive = true
+    }
+    
+    @objc
+    private func onTapRemoteButton() {
+        onTapRemoteCanvasClosure?()
     }
 }

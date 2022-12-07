@@ -28,13 +28,17 @@ class ShowBeautyFaceVC: UIViewController {
         collectionView.showsHorizontalScrollIndicator = false
         return collectionView
     }()
-    
+    static let beautyData = ByteBeautyModel.createBeautyData()
+    static let styleData = ByteBeautyModel.createStyleData()
+    static let filterData = ByteBeautyModel.createFilterData()
+    static let stickerData = ByteBeautyModel.createStickerData()
+     
     private lazy var dataArray: [ByteBeautyModel] = {
         switch type {
-        case .beauty: return ByteBeautyModel.createBeautyData()
-        case .style: return ByteBeautyModel.createStyleData()
-        case .filter: return ByteBeautyModel.createFilterData()
-        case .sticker: return ByteBeautyModel.createStickerData()
+        case .beauty: return ShowBeautyFaceVC.beautyData
+        case .style: return ShowBeautyFaceVC.styleData
+        case .filter: return ShowBeautyFaceVC.filterData
+        case .sticker: return ShowBeautyFaceVC.stickerData
         }
     }()
     
@@ -57,19 +61,19 @@ class ShowBeautyFaceVC: UIViewController {
     
     func changeValueHandler(value: CGFloat) {
         guard value > 0 else { return }
-        setBeautyHandler(value: value)
+        setBeautyHandler(value: value, isReset: false)
     }
     
     func reloadData() {
         collectionView.reloadData()
     }
     
-    private func setBeautyHandler(value: CGFloat) {
+    private func setBeautyHandler(value: CGFloat, isReset: Bool) {
         let model = dataArray[defalutSelectIndex]
         model.value = value
         switch type {
         case .beauty:
-            if value <= 0 {
+            if isReset {
                 ByteBeautyManager.shareManager.reset(datas: dataArray)
                 return
             }
@@ -78,7 +82,7 @@ class ShowBeautyFaceVC: UIViewController {
                                                      value: model.value)
             
         case .filter:
-            if value <= 0 {
+            if isReset {
                 ByteBeautyManager.shareManager.resetFilter(datas: dataArray)
                 return
             }
@@ -86,7 +90,7 @@ class ShowBeautyFaceVC: UIViewController {
                                                      value: model.value)
             
         case .style:
-            if value <= 0 {
+            if isReset {
                 ByteBeautyManager.shareManager.reset(datas: dataArray)
                 ByteBeautyManager.shareManager.reset(datas: dataArray,
                                                      key: "Makeup_ALL")
@@ -137,16 +141,25 @@ extension ShowBeautyFaceVC: UICollectionViewDelegateFlowLayout, UICollectionView
                                                                           for: indexPath) as! ShowBeautyFaceCell
         let model = dataArray[indexPath.item]
         cell.setupModel(model: model)
-        if indexPath.item == 0 {
+        if model.isSelected {
             selectedItemClosure?(model.value, model.path == nil)
         }
         return cell
     }
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        let preModel = dataArray[defalutSelectIndex]
+        preModel.isSelected = false
+        dataArray[defalutSelectIndex] = preModel
+        collectionView.reloadItems(at: [IndexPath(item: defalutSelectIndex, section: 0)])
+        
         defalutSelectIndex = indexPath.item
         let model = dataArray[indexPath.item]
-        setBeautyHandler(value: model.value)
+        setBeautyHandler(value: model.value, isReset: model.path == nil)
+        model.isSelected = true
+        dataArray[indexPath.item] = model
+        collectionView.reloadItems(at: [IndexPath(item: indexPath.item, section: 0)])
+        
         if type == .sticker {
             selectedItemClosure?(0, true)
             return

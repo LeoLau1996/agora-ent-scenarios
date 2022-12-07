@@ -125,8 +125,27 @@ class ShowPKInvitation: ShowBaseInfo {
     var fromName: String?                            //发起Pk用户名
     var fromRoomId: String?                          //发起Pk房间id
     var status: ShowRoomRequestStatus = .waitting    //邀请状态
-    var muteAudio: Bool = false                      //静音状态
+    var userMuteAudio: Bool = false                  //userId静音状态
+    var fromUserMuteAudio: Bool = false              //fromUserId静音状态
     var createdAt: Int64 = 0                         //创建时间，与19700101时间比较的毫秒数
+    
+    override func isEqual(_ object: Any?) -> Bool {
+        guard let info = object as? ShowPKInvitation,
+              userId == info.userId,
+              userName == info.userName,
+              roomId == info.roomId,
+              fromUserId == info.fromUserId,
+              fromName == info.fromName,
+              fromRoomId == info.fromRoomId,
+              status == info.status,
+              userMuteAudio == info.userMuteAudio,
+              fromUserMuteAudio == info.fromUserMuteAudio,
+              createdAt == info.createdAt else {
+            return false
+        }
+        
+        return true
+    }
     
     #if DEBUG
     override var description: String {
@@ -141,6 +160,8 @@ class ShowInteractionInfo: ShowBaseInfo {
     var userName: String?                               //用户名
     var roomId: String?                                 //用户所在房间id
     var interactStatus: ShowInteractionStatus = .idle   //交互类型
+    var muteAudio: Bool = false                         //userId静音状态
+    var ownerMuteAudio: Bool = false                    //房主静音状态（后续拆成两条interation info的muteAudio）
     var createdAt: Int64 = 0                            //创建时间，与19700101时间比较的毫秒数
     
     #if DEBUG
@@ -148,4 +169,15 @@ class ShowInteractionInfo: ShowBaseInfo {
         return "userId: \(userId ?? "") roomId: \(roomId ?? "") status: \(interactStatus) objectId: \(objectId ?? "")"
     }
     #endif
+    
+    override func isEqual(_ object: Any?) -> Bool {
+        guard let info = object as? ShowInteractionInfo,
+              userId == info.userId,
+              roomId == info.roomId,
+              interactStatus == info.interactStatus else {
+            return false
+        }
+        
+        return true
+    }
 }

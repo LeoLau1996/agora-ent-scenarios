@@ -10,14 +10,32 @@ import AgoraRtcKit
 import UIKit
 
 class ShowAgoraKitManager: NSObject {
-    private var exConnection: AgoraRtcConnection?
-    private lazy var videoEncoderConfig: AgoraVideoEncoderConfiguration = {
-        return AgoraVideoEncoderConfiguration(size: CGSize(width: 480, height: 840),
-                                       frameRate: .fps30,
-                                       bitrate: AgoraVideoBitrateStandard,
-                                       orientationMode: .fixedPortrait,
-                                       mirrorMode: .auto)
+    
+    lazy var musicDataArray: [ShowMusicConfigData] = {
+        return [musicBg, beautyVoice, mixVoice]
     }()
+    
+    // 背景音乐
+    lazy var musicBg: ShowMusicConfigData = {
+        return musicBgConfigData()
+    }()
+    
+    // 美声
+    lazy var beautyVoice: ShowMusicConfigData = {
+        return beautyVoiceConfigData()
+    }()
+    
+    // 混响
+    lazy var mixVoice: ShowMusicConfigData = {
+        return mixVoiceConfigData()
+    }()
+    
+    // 预设类型
+    var presetType: ShowPresetType?
+    
+    let videoEncoderConfig = AgoraVideoEncoderConfiguration()
+    
+    private var exConnection: AgoraRtcConnection?
     
     private lazy var rtcEngineConfig: AgoraRtcEngineConfig = {
        let config = AgoraRtcEngineConfig()
@@ -31,7 +49,15 @@ class ShowAgoraKitManager: NSObject {
         let config = AgoraCameraCapturerConfiguration()
         config.cameraDirection = .front
         config.dimensions = CGSize(width: 1280, height: 720)
+        config.frameRate = 15
         return config
+    }()
+    
+    private lazy var canvas: AgoraRtcVideoCanvas = {
+        let canvas = AgoraRtcVideoCanvas()
+        canvas.renderMode = .hidden
+        canvas.mirrorMode = .disabled
+        return canvas
     }()
     
     private (set) var agoraKit: AgoraRtcEngineKit!
@@ -40,6 +66,11 @@ class ShowAgoraKitManager: NSObject {
         didSet {
             agoraKit.delegate = delegate
         }
+    }
+    
+    deinit {
+        AgoraRtcEngineKit.destroy()
+        print("--ShowAgoraKitManager deinit--AgoraRtcEngineKit.destroy----")
     }
     
     override init() {
@@ -55,9 +86,6 @@ class ShowAgoraKitManager: NSObject {
         agoraKit?.setVideoFrameDelegate(self)
         agoraKit.setCameraCapturerConfiguration(captureConfig)
         
-        let canvas = AgoraRtcVideoCanvas()
-        canvas.renderMode = .hidden
-        canvas.mirrorMode = .disabled
         canvas.view = canvasView
         agoraKit.setupLocalVideo(canvas)
         agoraKit.enableVideo()
@@ -93,9 +121,10 @@ class ShowAgoraKitManager: NSObject {
     /// - Parameter size: 分辨率
     func setCaptureVideoDimensions(_ size: CGSize){
         agoraKit.disableVideo()
-        agoraKit.enableVideo()
         captureConfig.dimensions = CGSize(width: size.width, height: size.height)
+        print("采集分辨率切换为 width = \(size.width), height = \(size.height)")
         agoraKit?.setCameraCapturerConfiguration(captureConfig)
+        agoraKit.enableVideo()
     }
     
     /// 设置编码分辨率
@@ -112,7 +141,7 @@ class ShowAgoraKitManager: NSObject {
         agoraKit.stopPreview()
         agoraKit?.disableAudio()
         agoraKit?.disableVideo()
-        AgoraRtcEngineKit.destroy()
+//        AgoraRtcEngineKit.destroy()
     }
     
     func leaveChannelEx() {
@@ -168,12 +197,9 @@ class ShowAgoraKitManager: NSObject {
                                         info: nil,
                                         uid: uid)
         
-        let canvas = AgoraRtcVideoCanvas()
         canvas.view = canvasView
-        canvas.renderMode = .hidden
         if role == .broadcaster {
             canvas.uid = uid
-            canvas.mirrorMode = .disabled
             agoraKit?.setVideoFrameDelegate(self)
             agoraKit.setDefaultAudioRouteToSpeakerphone(true)
             agoraKit.enableAudio()

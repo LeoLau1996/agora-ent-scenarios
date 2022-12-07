@@ -12,21 +12,22 @@ import Bugly
     @objc static let shared: AppContext = .init()
     @objc var sceneLocalizeBundleName: String?
     @objc var sceneImageBundleName: String?
-
+    
+    
     override init() {
         super.init()
         setupBugly()
     }
-
+    
     private func setupBugly() {
-//#if DEBUG
-//#else
+#if DEBUG
+#else
         let config = BuglyConfig()
         config.reportLogLevel = BuglyLogLevel.warn
         config.unexpectedTerminatingDetectionEnable = true
         config.debugMode = true
-        Bugly.start(withAppId: "4826467049", config: config)
-//#endif
+        Bugly.start(withAppId: "e188384728", config: config)
+#endif
     }
     
     @objc func getLang() -> String {
