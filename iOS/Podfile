@@ -81,5 +81,5 @@ target 'AgoraEntScenarios' do
   all_pods
 end
 
-system("./libs/setup_podspec.sh")
+system("setup_podspec.sh")
 

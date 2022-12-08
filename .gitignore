@@ -3,8 +3,8 @@
 local.properties
 .idea
 Pods
-**/*.xcworkspace/*
+**/*.xcworkspace/**
 **/xcuserdata
 KeyCenter.swift
 **/ByteEffectLib/*
-**/libs/*
+iOS/libs/**.xcframework/**
