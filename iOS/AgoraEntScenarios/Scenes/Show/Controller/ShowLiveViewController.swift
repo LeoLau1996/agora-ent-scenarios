@@ -8,6 +8,7 @@
 import UIKit
 import AgoraRtcKit
 import IQKeyboardManager
+import SwiftUI
 
 class ShowLiveViewController: UIViewController {
 
@@ -102,6 +103,25 @@ class ShowLiveViewController: UIViewController {
             if let info = currentInteraction {
                 _startInteraction(interaction: info)
             }
+            
+            
+            //update audio status
+            guard let interaction = currentInteraction else { return }
+            
+            liveView.canvasView.isLocalMuteMic = interaction.ownerMuteAudio
+            liveView.canvasView.isRemoteMuteMic = interaction.muteAudio
+            
+            if role == .broadcaster {
+                agoraKitManager.agoraKit.muteLocalAudioStream(interaction.ownerMuteAudio)
+            } else if interaction.userId == VLUserCenter.user.id {
+                agoraKitManager.agoraKit.muteLocalAudioStream(interaction.muteAudio)
+            }
+        }
+    }
+    
+    private var muteLocalAudio: Bool = false {
+        didSet {
+            agoraKitManager.agoraKit.muteLocalAudioStream(muteLocalAudio)
         }
     }
     
@@ -269,6 +289,7 @@ extension ShowLiveViewController: ShowSubscribeServiceProtocol {
     }
     
     func onMicSeatApplyUpdated(apply: ShowMicSeatApply) {
+        guard apply.userId == VLUserCenter.user.id else { return }
         if apply.status == .waitting && role == .broadcaster {
             liveView.bottomBar.linkButton.isShowRedDot = true
 
@@ -287,13 +308,13 @@ extension ShowLiveViewController: ShowSubscribeServiceProtocol {
             liveView.bottomBar.linkButton.isSelected = false
             
         } else {
-            liveView.canvasView.canvasType = .none
+//            liveView.canvasView.canvasType = .none
             liveView.bottomBar.linkButton.isSelected = false
         }
     }
     
     func onMicSeatApplyDeleted(apply: ShowMicSeatApply) {
-        guard  apply.userId == VLUserCenter.user.id else { return }
+        guard apply.userId == VLUserCenter.user.id else { return }
 //        ToastView.show(text: "seat apply \(apply.userName ?? "") did reject")
         if role == .broadcaster {
             applyAndInviteView.reloadData()
@@ -302,12 +323,12 @@ extension ShowLiveViewController: ShowSubscribeServiceProtocol {
     
     func onMicSeatApplyAccepted(apply: ShowMicSeatApply) {
         applyAndInviteView.reloadData()
-        liveView.canvasView.canvasType = .joint_broadcasting
+//        liveView.canvasView.canvasType = .joint_broadcasting
         liveView.canvasView.setRemoteUserInfo(name: apply.userName ?? "")
     }
     
     func onMicSeatApplyRejected(apply: ShowMicSeatApply) {
-        guard  apply.userId == VLUserCenter.user.id else { return }
+        guard apply.userId == VLUserCenter.user.id else { return }
 //        ToastView.show(text: "seat apply \(apply.userName ?? "") did reject")
     }
     
@@ -339,7 +360,7 @@ extension ShowLiveViewController: ShowSubscribeServiceProtocol {
     }
 
     func onMicSeatInvitationAccepted(invitation: ShowMicSeatInvitation) {
-        liveView.canvasView.canvasType = .joint_broadcasting
+//        liveView.canvasView.canvasType = .joint_broadcasting
         liveView.canvasView.setRemoteUserInfo(name: invitation.userName ?? "")
 //        ToastView.show(text: "seat invitation \(invitation.userId ?? "") did accept")
         guard invitation.userId == VLUserCenter.user.id else { return }
@@ -424,14 +445,12 @@ extension ShowLiveViewController: ShowSubscribeServiceProtocol {
     }
     
     func onInterationUpdated(interaction: ShowInteractionInfo) {
-        guard let model = interactionList?.filter( { $0.objectId == interaction.objectId}).first else {
+        guard let index = interactionList?.firstIndex(where: { $0.objectId == interaction.objectId}) else {
             return
         }
-        model.ownerMuteAudio = interaction.ownerMuteAudio
-        model.muteAudio = interaction.muteAudio
-        currentInteraction = model
-        liveView.canvasView.isLocalMuteMic = interaction.ownerMuteAudio
-        liveView.canvasView.isRemoteMuteMic = interaction.muteAudio
+        interactionList?.remove(at: index)
+        interactionList?.insert(interaction, at: index)
+        currentInteraction = interactionList?.first
     }
     
     func onInteractionBegan(interaction: ShowInteractionInfo) {
@@ -598,6 +617,9 @@ extension ShowLiveViewController: AgoraRtcEngineDelegate {
 extension ShowLiveViewController: ShowRoomLiveViewDelegate {
     func onClickRemoteCanvas() {
         guard let info = interactionList?.first else { return }
+        if role == .audience, info.userId != VLUserCenter.user.id {
+            return
+        }
         let menuVC = ShowToolMenuViewController()
         menuVC.type = ShowMenuType.managerMic
         menuVC.selectedMap = [.mute_mic: info.muteAudio]
@@ -719,6 +741,8 @@ extension ShowLiveViewController: ShowToolMenuViewControllerDelegate {
         let uid = menu.type == .managerMic ? currentInteraction?.userId ?? "" : VLUserCenter.user.id
         AppContext.showServiceImp.muteAudio(mute: selected, userId: uid) { err in
         }
+        
+        self.muteLocalAudio = selected
     }
     
     func onClickRealTimeDataButtonSelected(_ menu:ShowToolMenuViewController, _ selected: Bool) {
