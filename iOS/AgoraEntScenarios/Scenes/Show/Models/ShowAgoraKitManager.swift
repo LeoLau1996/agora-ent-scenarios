@@ -222,6 +222,11 @@ extension ShowAgoraKitManager: AgoraVideoFrameDelegate {
         return true
     }
     
+    func onCapture(_ videoFrame: AgoraOutputVideoFrame, sourceType: AgoraVideoSourceType) -> Bool {
+        videoFrame.pixelBuffer = ByteBeautyManager.shareManager.processFrame(pixelBuffer: videoFrame.pixelBuffer)
+        return true
+    }
+    
     func getVideoFormatPreference() -> AgoraVideoFormat {
         .cvPixelBGRA
     }
