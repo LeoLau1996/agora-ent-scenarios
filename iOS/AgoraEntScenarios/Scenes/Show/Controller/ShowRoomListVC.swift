@@ -12,6 +12,7 @@ class ShowRoomListVC: UIViewController {
 
     private var roomListView: ShowRoomListView!
     private var roomList: [ShowRoomListModel]?
+    private var paramsText :String?
     
     // 自定义导航栏
     private let naviBar = ShowNavigationBar()
@@ -40,12 +41,19 @@ class ShowRoomListVC: UIViewController {
     }
     
     @objc private func didClickSettingButton(){
-        let vc = ShowPresettingVC()
-        vc.isBroadcaster = false
-        vc.didSelectedPresetType = {[weak self] type, modeName in
-            self?.audiencePresetType = type
+//        let vc = ShowPresettingVC()
+//        vc.isBroadcaster = false
+//        vc.didSelectedPresetType = {[weak self] type, modeName in
+//            self?.audiencePresetType = type
+//        }
+//        present(vc, animated: true)
+        let vc = ShowAdvancedSettingVC()
+        vc.parametersDidSet = { params,text in
+            self.paramsText = text
         }
-        present(vc, animated: true)
+        vc.isOutside = false
+        vc.isBroadcaster = false
+        navigationController?.pushViewController(vc, animated: true)
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -99,6 +107,7 @@ class ShowRoomListVC: UIViewController {
             if error == nil {
                 guard let wSelf = self else { return }
                 let vc = ShowLiveViewController()
+                vc.paramsText = wSelf.paramsText
                 vc.audiencePresetType = wSelf.audiencePresetType
                 vc.room = room
                 let nc = UINavigationController(rootViewController: vc)

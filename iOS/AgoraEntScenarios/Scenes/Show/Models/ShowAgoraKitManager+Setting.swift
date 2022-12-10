@@ -10,17 +10,9 @@ import AgoraRtcKit
 
 // 标记是否已经打开过
 private let hasOpenedKey = "hasOpenKey"
+private let privateParamsTextKey = "privateParamsText"
 
 extension ShowAgoraKitManager {
-    
-    // 超分倍数
-    enum SRType: Int {
-        case x1 = 6
-        case x1_33 = 7
-        case x1_5 = 8
-        case x2 = 3
-        case x_sharpen = 11
-    }
     
     private var dimensionsItems: [CGSize] {
         ShowAgoraVideoDimensions.allCases.map({$0.sizeValue})
@@ -43,15 +35,27 @@ extension ShowAgoraKitManager {
         // 默认音量设置
         ShowSettingKey.recordingSignalVolume.writeValue(80)
         ShowSettingKey.musincVolume.writeValue(30)
-        ShowSettingKey.SR.writeValue(false) // 默认关闭sr
         let hasOpened = UserDefaults.standard.bool(forKey: hasOpenedKey)
         // 第一次进入房间的时候设置
         if hasOpened == false {
+            // 默认值
+            ShowSettingKey.colorEnhance_strength.writeValue(0.5)
+            ShowSettingKey.colorEnhance_skinProtect.writeValue(1)
             updatePresetForType(presetType ?? .show_low, mode: .signle)
             UserDefaults.standard.set(true, forKey: hasOpenedKey)
         }
         updateSettingForkey(.lowlightEnhance)
+        updateSettingForkey(.lowlightEnhance_mode)
+        updateSettingForkey(.lowlightEnhance_level)
+        
         updateSettingForkey(.colorEnhance)
+        updateSettingForkey(.colorEnhance_strength)
+        updateSettingForkey(.colorEnhance_skinProtect)
+        
+        updateSettingForkey(.videoDenoiser)
+        updateSettingForkey(.videoDenoiser_mode)
+        updateSettingForkey(.videoDenoiser_level)
+
         updateSettingForkey(.videoEncodeSize)
         updateSettingForkey(.beauty)
         updateSettingForkey(.PVC)
@@ -60,6 +64,9 @@ extension ShowAgoraKitManager {
         updateSettingForkey(.recordingSignalVolume)
         updateSettingForkey(.musincVolume)
         updateSettingForkey(.audioBitRate)
+        updateSettingForkey(.exposureface)
+        // 设置私有参数
+        setPrivateParamters(paramsJsonText)
     }
     
     // 预设模式
@@ -84,11 +91,21 @@ extension ShowAgoraKitManager {
     }
     
     /// 设置观众端画质增强
-    private func _setQualityEnable(_ isOn: Bool, srType: SRType? = nil){
+    private func _setQualityEnable(_ isOn: Bool, srType: ShowSRType? = nil){
         ShowSettingKey.SR.writeValue(isOn)
         agoraKit.setParameters("{\"rtc.video.enable_sr\":{\"enabled\":\(isOn), \"mode\": 2}}")
-        if srType != nil {
-            agoraKit.setParameters("{\"rtc.video.sr_type\":\(srType!.rawValue)}")
+        if let xValue = srType?.xValue {
+            agoraKit.setParameters("{\"rtc.video.sr_type\":\(xValue)}")
+            agoraKit.setParameters("{\"rtc.video.sr_max_wh\":\(921600)}")
+        }
+    }
+    
+    /// 设置超分
+    private func _setSRWithIndex(_ index: Int){
+        let srType: ShowSRType = ShowSRType(rawValue: index) ?? .off
+        agoraKit.setParameters("{\"rtc.video.enable_sr\":{\"enabled\":\(srType != .off), \"mode\": 2}}")
+        if let xValue = srType.xValue {
+            agoraKit.setParameters("{\"rtc.video.sr_type\":\(xValue)}")
             agoraKit.setParameters("{\"rtc.video.sr_max_wh\":\(921600)}")
         }
     }
@@ -127,9 +144,9 @@ extension ShowAgoraKitManager {
             _setQualityEnable(false)
             break
         case .quality_medium:
-            _setQualityEnable(true, srType: SRType.x1_5)
+            _setQualityEnable(true, srType: ShowSRType.x1_5)
         case .quality_high:
-            _setQualityEnable(true, srType: SRType.x2)
+            _setQualityEnable(true, srType: ShowSRType.x2)
         case .base_low:
             _setQualityEnable(false)
         case .base_medium:
@@ -148,19 +165,21 @@ extension ShowAgoraKitManager {
         
         switch key {
         case .lowlightEnhance:
-            agoraKit.setLowlightEnhanceOptions(isOn, options: AgoraLowlightEnhanceOptions())
+            agoraKit.setLowlightEnhanceOptions(isOn, options: lowlightOptions)
         case .colorEnhance:
-            agoraKit.setColorEnhanceOptions(isOn, options: AgoraColorEnhanceOptions())
+            agoraKit.setColorEnhanceOptions(isOn, options: colorOptions)
         case .videoDenoiser:
-            agoraKit.setVideoDenoiserOptions(isOn, options: AgoraVideoDenoiserOptions())
+            agoraKit.setVideoDenoiserOptions(isOn, options: videoDenoiserOptions)
         case .beauty:
             agoraKit.setBeautyEffectOptions(isOn, options: AgoraBeautyOptions())
         case .PVC:
             agoraKit.setParameters("{\"rtc.video.enable_pvc\":\(isOn)}")
         case .SR:
-            agoraKit.setParameters("{\"rtc.video.enable_sr\":{\"enabled\":\(isOn), \"mode\": 2}}")
+//            agoraKit.setParameters("{\"rtc.video.enable_sr\":{\"enabled\":\(isOn), \"mode\": 2}}")
+            _setSRWithIndex(index)
         case .BFrame:
-            
+//            videoEncoderConfig.compressionPreference = isOn ? .quality : .lowLatency
+            agoraKit.setVideoEncoderConfiguration(videoEncoderConfig)
            break
         case .videoEncodeSize:
             videoEncoderConfig.dimensions = dimensionsItems[index]
@@ -182,7 +201,70 @@ extension ShowAgoraKitManager {
             agoraKit.adjustAudioMixingVolume(Int(sliderValue))
         case .audioBitRate:
             break
+        case .exposureface:
+            let isCameraAutoFocus = agoraKit.isCameraAutoExposureFaceModeSupported()
+            if isCameraAutoFocus == true {
+                agoraKit.setCameraAutoExposureFaceModeEnabled(isOn)
+            } else {
+//                showAlert(title: "", message: "不支持自动对焦")
+            }
+        case .lowlightEnhance_mode:
+            lowlightOptions.mode = AgoraLowlightEnhanceMode(rawValue: UInt(index)) ?? .auto
+            updateSettingForkey(.lowlightEnhance)
+        case .lowlightEnhance_level:
+            lowlightOptions.level = AgoraLowlightEnhanceLevel(rawValue: UInt(index)) ?? .quality
+            updateSettingForkey(.lowlightEnhance)
+        case .colorEnhance_strength:
+            colorOptions.strengthLevel = sliderValue
+            updateSettingForkey(.colorEnhance)
+        case .colorEnhance_skinProtect:
+            colorOptions.skinProtectLevel = sliderValue
+            updateSettingForkey(.colorEnhance)
+        case .videoDenoiser_mode:
+            videoDenoiserOptions.mode = AgoraVideoDenoiserMode(rawValue: UInt(index)) ?? .auto
+            updateSettingForkey(.videoDenoiser)
+        case .videoDenoiser_level:
+            videoDenoiserOptions.level = AgoraVideoDenoiserLevel(rawValue: UInt(index)) ?? .highQuality
+            updateSettingForkey(.videoDenoiser)
+        }
+    }
+    
+    // 设置私有参数
+    private func setPrivateParamters(_ jsonText: String?) {
+        guard let jsonStr = jsonText else { return }
+        let paramters = jsonStr.components(separatedBy: ",")
+        for param in paramters {
+            print("param =========> \(param)")
+            agoraKit.setParameters(param)
         }
     }
 
+}
+
+extension ShowAgoraKitManager {
+    
+    var paramsJsonText: String? {
+        set{
+            if newValue != nil {
+                setPrivateParamters(newValue)
+                UserDefaults.standard.set(newValue, forKey: privateParamsTextKey)
+            }else{
+                UserDefaults.standard.removeObject(forKey: privateParamsTextKey)
+            }
+        }
+        
+        get{
+            if let text: String = UserDefaults.standard.value(forKey: privateParamsTextKey) as? String {
+                return text
+            }
+            return nil
+        }
+    }
+    
+    static var privateParamsText: String? {
+        if let text: String = UserDefaults.standard.value(forKey: privateParamsTextKey) as? String {
+            return text
+        }
+        return nil
+    }
 }

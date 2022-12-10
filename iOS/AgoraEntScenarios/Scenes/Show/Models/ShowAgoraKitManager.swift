@@ -35,6 +35,12 @@ class ShowAgoraKitManager: NSObject {
     var presetType: ShowPresetType?
     
     let videoEncoderConfig = AgoraVideoEncoderConfiguration()
+    // 暗光增强
+    let  lowlightOptions =  AgoraLowlightEnhanceOptions()
+    // 色彩增强
+    let colorOptions = AgoraColorEnhanceOptions()
+    // 视频降噪
+    let videoDenoiserOptions =  AgoraVideoDenoiserOptions()
     
     private var exConnection: AgoraRtcConnection?
     

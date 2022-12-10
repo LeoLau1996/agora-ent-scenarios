@@ -14,11 +14,14 @@ class ShowAdvancedSettingVC: UIViewController, UIGestureRecognizerDelegate {
     var mode: ShowMode?
     var isBroadcaster = true
     var isOutside = false
+    var parametersDidSet: ((_ params: [String]?, _ text: String?)->())?
+    
+//    private var joinedParams: [String]?
 
     // 自定义导航栏
     private let naviBar = ShowNavigationBar()
     
-    var settingManager: ShowAgoraKitManager!
+    var settingManager: ShowAgoraKitManager?
     
     // 当前设置的预设值
     var presetModeName: String?
@@ -72,10 +75,12 @@ class ShowAdvancedSettingVC: UIViewController, UIGestureRecognizerDelegate {
         navigationController?.interactivePopGestureRecognizer?.delegate = self
         navigationController?.interactivePopGestureRecognizer?.isEnabled = true
         if isBroadcaster {
+            /*
             // 自动弹出预设
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                 self.didClickPreSetBarButton()
             }
+             */
         }
     }
     
@@ -105,10 +110,14 @@ class ShowAdvancedSettingVC: UIViewController, UIGestureRecognizerDelegate {
         // 标题
         naviBar.title = "show_advanced_setting_title".show_localized
         // 右边按钮
+        /*
         if isBroadcaster {
             let preSetButtonItem = ShowBarButtonItem(title: "show_advanced_setting_preset".show_localized, target: self, action: #selector(didClickPreSetBarButton))
             naviBar.rightItems = [preSetButtonItem]
         }
+         */
+        let paramsItem = ShowBarButtonItem(title: "parameter", target: self, action: #selector(didClickParameterButton))
+        naviBar.rightItems = [paramsItem]
         view.addSubview(naviBar)
     }
     
@@ -117,21 +126,39 @@ class ShowAdvancedSettingVC: UIViewController, UIGestureRecognizerDelegate {
         let outsideSettings: [ShowSettingKey] = [
             .H265,
             .colorEnhance,
+            .colorEnhance_strength,
+            .colorEnhance_skinProtect,
             .lowlightEnhance,
+            .lowlightEnhance_mode,
+            .lowlightEnhance_level,
             .videoDenoiser,
+            .videoDenoiser_mode,
+            .videoDenoiser_level,
             .PVC,
+            .BFrame,
+            .exposureface,
             .videoEncodeSize,
             .FPS,
-            .videoBitRate
+            .videoBitRate,
         ]
+        
         let insideSettings: [ShowSettingKey] = [
+            .H265,
             .colorEnhance,
+            .colorEnhance_strength,
+            .colorEnhance_skinProtect,
             .lowlightEnhance,
+            .lowlightEnhance_mode,
+            .lowlightEnhance_level,
             .videoDenoiser,
+            .videoDenoiser_mode,
+            .videoDenoiser_level,
             .PVC,
+            .BFrame,
+            .exposureface,
             .videoEncodeSize,
             .FPS,
-            .videoBitRate
+            .videoBitRate,
         ]
         let broadcasterVideoSettings: [ShowSettingKey] = isOutside ? outsideSettings : insideSettings
         // 观众端设置
@@ -179,11 +206,24 @@ class ShowAdvancedSettingVC: UIViewController, UIGestureRecognizerDelegate {
 
 
 extension ShowAdvancedSettingVC {
+    // 点击私参按钮
+    @objc private func didClickParameterButton() {
+        let paramsVC = ShowPrivateParamsVC()
+        paramsVC.result = { [weak self] (params, txt) in
+            guard let text = txt, text.count > 0 else {
+                return
+            }
+            self?.settingManager?.paramsJsonText = txt
+            self?.parametersDidSet?(params,txt)
+        }
+        present(paramsVC, animated: true)
+    }
+    
     // 点击预设按钮
     @objc private func didClickPreSetBarButton() {
         let vc = ShowPresettingVC()
         vc.didSelectedPresetType = {[weak self] type, modeName in
-            self?.settingManager.updatePresetForType(type, mode: self?.mode ?? .signle)
+            self?.settingManager?.updatePresetForType(type, mode: self?.mode ?? .signle)
             self?.videoSettingVC?.reloadData()
             self?.audioSettingVC?.reloadData()
             let text1 = "show_presetting_update_toast1".show_localized

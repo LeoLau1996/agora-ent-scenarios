@@ -12,6 +12,8 @@ import SwiftUI
 
 class ShowLiveViewController: UIViewController {
 
+    var paramsText :String?
+    
     var room: ShowRoomListModel?
     
     var selectedResolution = 1
@@ -28,6 +30,8 @@ class ShowLiveViewController: UIViewController {
     lazy var agoraKitManager: ShowAgoraKitManager = {
         let manager = ShowAgoraKitManager()
         manager.defaultSetting()
+        manager.paramsJsonText = paramsText
+//        manager.setPrivateParamters(params)
         return manager
     }()
     

@@ -31,7 +31,7 @@ class ShowCreateLiveVC: UIViewController {
 //        agoraKitManager.defaultSetting()
         agoraKitManager.startPreview(canvasView: localView)
         configNaviBar()
-        showPreset()
+//        showPreset()
     }
     
     func configNaviBar() {

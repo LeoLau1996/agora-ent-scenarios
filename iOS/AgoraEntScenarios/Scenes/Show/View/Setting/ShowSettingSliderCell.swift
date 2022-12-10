@@ -16,7 +16,7 @@ class ShowSettingSliderCell: ShowSettingBaseCell {
         didSet {
             var limitValue = min(currentValue, slider.maximumValue)
             limitValue = max(limitValue, slider.maximumValue)
-            valueLabel.text = String(format: "%.0f", slider.value)
+            valueLabel.text = String(format: "%.1f", slider.value)
         }
     }
     
@@ -54,12 +54,18 @@ class ShowSettingSliderCell: ShowSettingBaseCell {
         }
     }
     
-    func setTitle(_ title: String, value: Float, minValue: Float, maxValue: Float,sliderValueChangingAction: ((_ value: Float)->())?,sliderValueChangedAction: ((_ value: Float)->())?) {
+    func setTitle(_ title: String, showFloat:Bool = false, value: Float, minValue: Float, maxValue: Float,sliderValueChangingAction: ((_ value: Float)->())?,sliderValueChangedAction: ((_ value: Float)->())?) {
         titleLabel.text = title
         slider.minimumValue = minValue
         slider.maximumValue = maxValue
         slider.value = value
-        currentValue = value
+        var limitValue = min(currentValue, slider.maximumValue)
+        limitValue = max(limitValue, slider.maximumValue)
+        if showFloat {
+            valueLabel.text = String(format: "%.1f", slider.value)
+        }else{
+            valueLabel.text = String(format: "%.0f", slider.value)
+        }
         self.sliderValueChangedAction = sliderValueChangedAction
         self.sliderValueChangingAction = sliderValueChangingAction
     }

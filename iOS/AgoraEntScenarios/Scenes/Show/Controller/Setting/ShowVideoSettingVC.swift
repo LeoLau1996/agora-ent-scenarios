@@ -17,7 +17,7 @@ class ShowVideoSettingVC: UIViewController {
     private let transDelegate = ShowPresentTransitioningDelegate()
     
     var dataArray = [ShowSettingKey]()
-    var settingManager: ShowAgoraKitManager!
+    var settingManager: ShowAgoraKitManager?
     var willChangeSettingParams: ((_ key: ShowSettingKey, _ value: Any)->Bool)?
     
     private lazy var tableView: UITableView = {
@@ -77,7 +77,7 @@ extension ShowVideoSettingVC: UITableViewDelegate, UITableViewDataSource {
             return cell
         }else if data.type == .slider {
             let cell = tableView.dequeueReusableCell(withIdentifier: SliderCellID, for: indexPath) as! ShowSettingSliderCell
-            cell.setTitle(data.title, value: data.floatValue, minValue: data.sliderValueScope.0, maxValue: data.sliderValueScope.1) {value in
+            cell.setTitle(data.title, showFloat: data != .videoBitRate, value: data.floatValue, minValue: data.sliderValueScope.0, maxValue: data.sliderValueScope.1) {value in
                 
             } sliderValueChangedAction: {[weak self] value in
                 self?.changeValue(value, forSettingKey: data)
@@ -96,7 +96,7 @@ extension ShowVideoSettingVC: UITableViewDelegate, UITableViewDataSource {
                 vc.dataArray = data.items
                 vc.didSelectedIndex = {[weak self] index in
                     data.writeValue(index)
-                    self?.settingManager.updateSettingForkey(data)
+                    self?.settingManager?.updateSettingForkey(data)
                     tableView.reloadData()
                 }
                 self?.present(vc, animated: true, completion: {
@@ -115,7 +115,7 @@ extension ShowVideoSettingVC {
     func changeValue(_ value: Any, forSettingKey key: ShowSettingKey) {
         if let willChange = willChangeSettingParams, willChange(key,value) == true {
             key.writeValue(value)
-            settingManager.updateSettingForkey(key)
+            settingManager?.updateSettingForkey(key)
         }
         tableView.reloadData()
     }

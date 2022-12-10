@@ -159,6 +159,7 @@
 		A845AD42291BB11C00A41D8D /* ShowMusicEffectCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A845AD41291BB11C00A41D8D /* ShowMusicEffectCell.swift */; };
 		A845AD44291BB8F300A41D8D /* ShowMusicItemCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A845AD43291BB8F300A41D8D /* ShowMusicItemCell.swift */; };
 		A845AD46291C9A0800A41D8D /* ShowChatInputView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A845AD45291C9A0800A41D8D /* ShowChatInputView.swift */; };
+		A875550829444179008E048A /* ShowPrivateParamsVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = A875550729444179008E048A /* ShowPrivateParamsVC.swift */; };
 		A8899D46293DC3F80020F933 /* ShowAgoraKitManager+Setting.swift in Sources */ = {isa = PBXBuildFile; fileRef = A8899D45293DC3F80020F933 /* ShowAgoraKitManager+Setting.swift */; };
 		A8899D48293DC6320020F933 /* ShowAgoraKitManager+Music.swift in Sources */ = {isa = PBXBuildFile; fileRef = A8899D47293DC6320020F933 /* ShowAgoraKitManager+Music.swift */; };
 		A8899D4E294089FB0020F933 /* KeyCenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = A8899D4D294089FA0020F933 /* KeyCenter.swift */; };
@@ -667,6 +668,7 @@
 		A845AD41291BB11C00A41D8D /* ShowMusicEffectCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShowMusicEffectCell.swift; sourceTree = "<group>"; };
 		A845AD43291BB8F300A41D8D /* ShowMusicItemCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShowMusicItemCell.swift; sourceTree = "<group>"; };
 		A845AD45291C9A0800A41D8D /* ShowChatInputView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShowChatInputView.swift; sourceTree = "<group>"; };
+		A875550729444179008E048A /* ShowPrivateParamsVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShowPrivateParamsVC.swift; sourceTree = "<group>"; };
 		A8899D45293DC3F80020F933 /* ShowAgoraKitManager+Setting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ShowAgoraKitManager+Setting.swift"; sourceTree = "<group>"; };
 		A8899D47293DC6320020F933 /* ShowAgoraKitManager+Music.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ShowAgoraKitManager+Music.swift"; sourceTree = "<group>"; };
 		A8899D4D294089FA0020F933 /* KeyCenter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KeyCenter.swift; sourceTree = "<group>"; };
@@ -1546,6 +1548,7 @@
 				A81ECFF22921E07A00B40454 /* ShowVideoSettingVC.swift */,
 				A8F3723B2923995B00CEA88D /* ShowSettingActionSheetVC.swift */,
 				A8F372432924818500CEA88D /* ShowPresettingVC.swift */,
+				A875550729444179008E048A /* ShowPrivateParamsVC.swift */,
 			);
 			path = Setting;
 			sourceTree = "<group>";
@@ -3529,6 +3532,7 @@
 				DD84179A29090C520026B624 /* VLKTVSelBgModel.m in Sources */,
 				DDA19A1828FFE579009D3E61 /* RtmSyncManager+ISyncManager.swift in Sources */,
 				0510B850290B799E0063E57A /* VRSoundEffectsList.swift in Sources */,
+				A875550829444179008E048A /* ShowPrivateParamsVC.swift in Sources */,
 				E73147CC2926214B0032198F /* BEImageUtils.m in Sources */,
 				05FFE6F0290F706C0024D22F /* VoiceRoomGifterCell.swift in Sources */,
 				05FFE737290F74560024D22F /* AgoraChatRoomHeaderView.swift in Sources */,
@@ -3827,7 +3831,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 31;
-				DEVELOPMENT_TEAM = YS397FG5PA;
+				DEVELOPMENT_TEAM = JDPG69R49Z;
 				ENABLE_BITCODE = NO;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",

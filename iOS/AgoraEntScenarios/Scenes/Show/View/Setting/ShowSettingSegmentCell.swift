@@ -106,7 +106,9 @@ class ShowSettingSegmentCell: ShowSettingBaseCell {
     func setTitle(_ title: String, items: [String], defaultSelectIndex: Int, didSelectedIndex: ((_ index: Int)->())?) {
         titleLabel.text = title
         segmentView.titles = items
-        segmentView.defaultSelectedIndex = defaultSelectIndex
-        segmentView.didSelectedIndex = didSelectedIndex
+        if segmentView.defaultSelectedIndex != defaultSelectIndex {
+            segmentView.defaultSelectedIndex = defaultSelectIndex
+            segmentView.didSelectedIndex = didSelectedIndex
+        }
     }
 }

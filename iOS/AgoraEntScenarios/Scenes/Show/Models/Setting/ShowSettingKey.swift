@@ -32,6 +32,122 @@ extension AgoraVideoFrameRate {
     }
 }
 
+// 超分倍数
+enum ShowSRType: Int, CaseIterable {
+    case off
+    case x1
+    case x1_33
+    case x1_5
+    case x2
+    case x_sharpen
+    
+    var xValue: Int? {
+        switch self {
+            
+        case .off:
+            return nil
+        case .x1:
+            return 6
+        case .x1_33:
+            return 7
+        case .x1_5:
+            return 8
+        case .x2:
+            return 3
+        case .x_sharpen:
+            return 11
+        }
+    }
+    
+    var title: String {
+        switch self {
+        case .off:
+            return "关"
+        case .x1:
+            return "x1"
+        case .x1_33:
+            return "x1.33"
+        case .x1_5:
+            return "x1.5"
+        case .x2:
+            return "x2"
+        case .x_sharpen:
+            return "锐化"
+        }
+    }
+}
+
+extension AgoraVideoDenoiserMode {
+    var title: String {
+        switch self {
+        case .auto:
+            return "auto"
+        case .manual:
+            return "manual"
+        @unknown default:
+            return ""
+        }
+    }
+    
+    static var allcaseTitles: [String] {
+        return ["auto","manual"]
+    }
+}
+
+extension AgoraVideoDenoiserLevel {
+    var title: String {
+        switch self {
+        case .highQuality:
+            return "highQuality"
+        case .fast:
+            return "fast"
+        case .strength:
+            return "strength"
+        @unknown default:
+            return ""
+        }
+    }
+    
+    static var allcaseTitles: [String] {
+        return ["highQuality","fast","strength"]
+    }
+}
+
+extension AgoraLowlightEnhanceMode {
+    var title: String {
+        switch self {
+        case .auto:
+            return "auto"
+        case .manual:
+            return "manual"
+        @unknown default:
+            return ""
+        }
+    }
+    
+    static var allcaseTitles: [String] {
+        return ["auto","manual"]
+    }
+}
+
+extension AgoraLowlightEnhanceLevel {
+    var title: String {
+        switch self {
+        case .quality:
+            return "quality"
+        case .fast:
+            return "fast"
+        @unknown default:
+            return ""
+        }
+    }
+    
+    static var allcaseTitles: [String] {
+        return ["highQuality","fast"]
+    }
+}
+
+
 enum ShowSettingKey: String, CaseIterable {
     
     enum KeyType {
@@ -42,8 +158,14 @@ enum ShowSettingKey: String, CaseIterable {
     }
     
     case lowlightEnhance        // 暗光增强
+    case lowlightEnhance_mode
+    case lowlightEnhance_level
     case colorEnhance           // 色彩增强
+    case colorEnhance_strength
+    case colorEnhance_skinProtect
     case videoDenoiser          // 降噪
+    case videoDenoiser_mode
+    case videoDenoiser_level
     case beauty                 // 美颜
     case PVC                    // pvc
     case SR                     // 超分
@@ -56,6 +178,7 @@ enum ShowSettingKey: String, CaseIterable {
     case recordingSignalVolume  // 人声音量
     case musincVolume           // 音乐音量
     case audioBitRate           // 音频码率
+    case exposureface           // exposureface
     
     var title: String {
         switch self {
@@ -89,6 +212,20 @@ enum ShowSettingKey: String, CaseIterable {
             return "show_advance_setting_musicVolume_title".show_localized
         case .audioBitRate:
             return "show_advance_setting_audio_bitRate_title".show_localized
+        case .exposureface:
+            return "exposureface"
+        case .lowlightEnhance_mode:
+            return "show_advance_setting_lowlight_title".show_localized + "mode"
+        case .lowlightEnhance_level:
+            return "show_advance_setting_lowlight_title".show_localized + "level"
+        case .colorEnhance_strength:
+            return "show_advance_setting_colorEnhance_title".show_localized + "strength"
+        case .colorEnhance_skinProtect:
+            return "show_advance_setting_colorEnhance_title".show_localized + "skinProtect"
+        case .videoDenoiser_mode:
+            return "show_advance_setting_videoDenoiser_title".show_localized + "mode"
+        case .videoDenoiser_level:
+            return "show_advance_setting_videoDenoiser_title".show_localized + "level"
         }
     }
     
@@ -106,7 +243,7 @@ enum ShowSettingKey: String, CaseIterable {
         case .PVC:
             return .aSwitch
         case .SR:
-            return .aSwitch
+            return .label
         case .BFrame:
             return .aSwitch
         case .videoEncodeSize:
@@ -124,6 +261,20 @@ enum ShowSettingKey: String, CaseIterable {
         case .musincVolume:
             return .slider
         case .audioBitRate:
+            return .label
+        case .exposureface:
+            return .aSwitch
+        case .lowlightEnhance_mode:
+            return .label
+        case .lowlightEnhance_level:
+            return .label
+        case .colorEnhance_strength:
+            return .slider
+        case .colorEnhance_skinProtect:
+            return .slider
+        case .videoDenoiser_mode:
+            return .label
+        case .videoDenoiser_level:
             return .label
         }
     }
@@ -157,8 +308,12 @@ enum ShowSettingKey: String, CaseIterable {
             return (0, 100)
         case .musincVolume:
             return (0, 100)
+        case .colorEnhance_strength:
+            return (0.0, 1.0)
+        case .colorEnhance_skinProtect:
+            return (0.0, 1.0)
         default:
-            return (0,0)
+            return (0.0, 1.0)
         }
     }
     
@@ -178,6 +333,17 @@ enum ShowSettingKey: String, CaseIterable {
             ]
         case .audioBitRate:
             return ["2","3","5"]
+        case .SR:
+            return  ShowSRType.allCases.map({ $0.title })
+            
+        case .videoDenoiser_mode:
+            return AgoraVideoDenoiserMode.allcaseTitles
+        case .videoDenoiser_level:
+            return AgoraVideoDenoiserLevel.allcaseTitles
+        case .lowlightEnhance_mode:
+            return AgoraLowlightEnhanceMode.allcaseTitles
+        case .lowlightEnhance_level:
+            return AgoraLowlightEnhanceLevel.allcaseTitles
         default:
             return []
         }
