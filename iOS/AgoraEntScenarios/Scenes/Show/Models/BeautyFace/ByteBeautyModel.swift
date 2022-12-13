@@ -30,7 +30,7 @@ class ByteBeautyModel: ByteBaseModel {
         var model = ByteBeautyModel()
         model.name = "无"
         model.icon = "show_beauty_none"
-        model.isSelected = true
+        model.path = ""
         dataArray.append(model)
         
         model = ByteBeautyModel()
@@ -39,6 +39,7 @@ class ByteBeautyModel: ByteBaseModel {
         model.value = 0.3
         model.name = "磨皮".show_localized
         model.icon = "meiyan_icon_mopi"
+        model.isSelected = true
         dataArray.append(model)
         
         model = ByteBeautyModel()
@@ -269,14 +270,14 @@ class ByteBeautyModel: ByteBaseModel {
         dataArray.append(model)
         
         model = ByteBeautyModel()
-        model.path = "biti"
-        model.name = "鼻涕".show_localized
+        model.path = "huahua"
+        model.name = "花花".show_localized
         model.icon = "meiyan_lj_naiyou"
         dataArray.append(model)
         
         model = ByteBeautyModel()
-        model.path = "test_sticker"
-        model.name = "周年狂欢".show_localized
+        model.path = "wochaotian"
+        model.name = "我超甜".show_localized
         model.icon = "meiyan_lj_makalong"
         dataArray.append(model)
         

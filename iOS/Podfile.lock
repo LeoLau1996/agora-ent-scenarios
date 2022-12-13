@@ -14,9 +14,9 @@ PODS:
   - AFNetworking/Serialization (4.0.1)
   - AFNetworking/UIKit (4.0.1):
     - AFNetworking/NSURLSession
-  - Agora-Scene-Utils (1.0.9)
+  - Agora-Scene-Utils (1.1.0)
   - Agora_Chat_iOS (1.0.8)
-  - AgoraLyricsScore (1.0.8.4):
+  - AgoraLyricsScore (1.0.8.6):
     - Zip
   - AgoraRtcEngine_iOS (1.0)
   - AgoraRtm_iOS (1.5.1)
@@ -371,9 +371,9 @@ PODS:
 
 DEPENDENCIES:
   - AFNetworking (~> 4.0.1)
-  - Agora-Scene-Utils (~> 1.0.8)
+  - Agora-Scene-Utils (~> 1.1.0)
   - Agora_Chat_iOS
-  - AgoraLyricsScore (~> 1.0.8)
+  - AgoraLyricsScore (~> 1.0.8.6)
   - AgoraRtcEngine_iOS (from `./libs`)
   - AgoraRtm_iOS
   - Bugly
@@ -393,7 +393,7 @@ DEPENDENCIES:
   - MBProgressHUD (~> 1.1.0)
   - MJExtension
   - MJRefresh (~> 3.2.0)
-  - QMUIKit
+  - QMUIKit (= 4.5.1)
   - SDWebImage (~> 5.0.3)
   - SnapKit
   - SocketRocket
@@ -452,9 +452,9 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   AFNetworking: 7864c38297c79aaca1500c33288e429c3451fdce
-  Agora-Scene-Utils: 260f18dfa184b64b064ddeb222aae08f6f6c4937
+  Agora-Scene-Utils: 3f9b1c422cfdda4a7051cf4cffdd0cfef80c9c89
   Agora_Chat_iOS: fcd8afa4f1cff55da59535a6ed573594ace3c169
-  AgoraLyricsScore: 423f09142daf1846b16713aeb3a4975ebe3f1798
+  AgoraLyricsScore: ee80fe4f33fec56b3cdd53e28383fbb4d82c743d
   AgoraRtcEngine_iOS: 7af3b344c55059556eeb05dc748ff124c593d4fb
   AgoraRtm_iOS: 595a9fa33a409831e6183396ea8f8bc563918403
   Bugly: b8715e6ec4004b7f7fbffab0643ba80545aee3da
@@ -490,6 +490,6 @@ SPEC CHECKSUMS:
   Zip: b3fef584b147b6e582b2256a9815c897d60ddc67
   ZSwiftBaseLib: e3d623c5127670ac168e41358c7d034c82edfda4
 
-PODFILE CHECKSUM: 008b3bdcadefa43af5e5ababdb6b7c8c4e36da97
+PODFILE CHECKSUM: 47a467019dde823b4e3db46a13d0eb82a0ad23cd
 
 COCOAPODS: 1.11.3

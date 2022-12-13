@@ -112,8 +112,10 @@ class ShowAdvancedSettingVC: UIViewController, UIGestureRecognizerDelegate {
         // 右边按钮
         /*
         if isBroadcaster {
+            /*
             let preSetButtonItem = ShowBarButtonItem(title: "show_advanced_setting_preset".show_localized, target: self, action: #selector(didClickPreSetBarButton))
             naviBar.rightItems = [preSetButtonItem]
+             */
         }
          */
         let paramsItem = ShowBarButtonItem(title: "parameter", target: self, action: #selector(didClickParameterButton))
@@ -178,6 +180,7 @@ class ShowAdvancedSettingVC: UIViewController, UIGestureRecognizerDelegate {
         
         let vc = ShowVideoSettingVC()
         vc.settingManager = settingManager
+        vc.isOutside = isOutside
        
         vc.dataArray = settings[index]
         vc.willChangeSettingParams = {[weak self] key, value in

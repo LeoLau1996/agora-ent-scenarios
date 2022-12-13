@@ -130,7 +130,12 @@ class ShowCreateLiveView: UIView {
         // tips
         let tipsLabel = UILabel()
         let tipsText = "create_tips".show_localized
-        let attachment = NSTextAttachment(image: UIImage.show_sceneImage(name: "show_create_tips")!)
+        var attachment = NSTextAttachment()
+        if #available(iOS 13.0, *) {
+            attachment = NSTextAttachment(image: UIImage.show_sceneImage(name: "show_create_tips")!)
+        } else {
+            attachment.image = UIImage.show_sceneImage(name: "show_create_tips")
+        }
         attachment.bounds = CGRect(x: 0, y: -2, width: 11, height: 11)
         let attriTipsImg = NSAttributedString(attachment: attachment)
         let attriTips = NSMutableAttributedString(attributedString: attriTipsImg)
@@ -197,14 +202,14 @@ class ShowCreateLiveView: UIView {
         beautyButton.addTarget(self, action: #selector(didClickBeautyButton), for: .touchUpInside)
         
         // 画质
-        let qualityButton = createButton(imgName: "show_create_quality", title: "create_button_quality".show_localized)
-        qualityButton.addTarget(self, action: #selector(didClickQualityButton), for: .touchUpInside)
+//        let qualityButton = createButton(imgName: "show_create_quality", title: "create_button_quality".show_localized)
+//        qualityButton.addTarget(self, action: #selector(didClickQualityButton), for: .touchUpInside)
         
         // 设置
         let settingButton = createButton(imgName: "show_setting", title: "create_button_settings".show_localized)
         settingButton.addTarget(self, action: #selector(didClickSettingButton), for: .touchUpInside)
         
-        let buttonArray = [cameraButton, beautyButton, qualityButton,settingButton]
+        let buttonArray = [cameraButton, beautyButton, settingButton]
         let count = buttonArray.count
         let itemSpace: CGFloat = 40
         let itemWidth: CGFloat = 40

@@ -78,6 +78,13 @@ class ShowCreateLiveVC: UIViewController {
         beautyVC.dismissed = { [weak self] in
             self?.createView.hideBottomViews = false
         }
+        
+        // 创建默认美颜效果
+        ShowBeautyFaceVC.beautyData.forEach({
+            ByteBeautyManager.shareManager.setBeauty(path: $0.path,
+                                                     key: $0.key,
+                                                     value: $0.value)
+        })
     }
     
     private func showPreset() {
@@ -100,12 +107,13 @@ class ShowCreateLiveVC: UIViewController {
 extension ShowCreateLiveVC: ShowCreateLiveViewDelegate {
     
     func onClickSettingBtnAction() {
-        let vc = ShowAdvancedSettingVC()
-        vc.mode = .signle
-        vc.isBroadcaster = true
-        vc.isOutside = true
-        vc.settingManager = agoraKitManager
-        self.navigationController?.pushViewController(vc, animated: true)
+//        let vc = ShowAdvancedSettingVC()
+//        vc.mode = .signle
+//        vc.isBroadcaster = true
+//        vc.isOutside = true
+//        vc.settingManager = agoraKitManager
+//        self.navigationController?.pushViewController(vc, animated: true)
+        showPreset()
     }
     
     func onClickCameraBtnAction() {
