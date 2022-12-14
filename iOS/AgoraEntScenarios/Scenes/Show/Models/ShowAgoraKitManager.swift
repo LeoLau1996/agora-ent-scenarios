@@ -83,7 +83,10 @@ class ShowAgoraKitManager: NSObject {
     //MARK: private
     private func setupContentInspectConfig() {
         let config = AgoraContentInspectConfig()
-        let dic: [String: String] = [ "userNo": VLUserCenter.user.id ]
+        let dic: [String: String] = [
+            "userNo": VLUserCenter.user.id,
+            "sceneName": "show"
+        ]
         
         guard let jsonData = try? JSONSerialization.data(withJSONObject: dic, options: .prettyPrinted) else {
             print("setupContentInspectConfig fail")
@@ -98,6 +101,26 @@ class ShowAgoraKitManager: NSObject {
         let ret = agoraKit.enableContentInspect(true, config: config)
         print("setupContentInspectConfig: \(ret)")
     }
+    
+    /// 语音审核
+    private func moderationAudio(channelName: String, role: AgoraClientRole) {
+        guard role == .broadcaster else { return }
+        let userInfo = ["userId": VLUserCenter.user.id,
+                        "userName": VLUserCenter.user.name]
+        let parasm: [String: Any] = ["appId": KeyCenter.AppId,
+                                     "channelName": channelName,
+                                     "channelType": rtcEngineConfig.channelProfile.rawValue,
+                                     "traceId": UUID().uuid16string(),
+                                     "src": "iOS",
+                                     "payload": JSONObject.toJsonString(dict: userInfo) ?? ""]
+        NetworkManager.shared.postRequest(urlString: "https://toolbox.bj2.agoralab.co/v1/moderation/audio",
+                                          params: parasm) { response in
+            print("response === \(response)")
+        } failure: { errr in
+            print(errr)
+        }
+    }
+    
     
     /// 初始化并预览
     /// - Parameter canvasView: 画布
@@ -138,7 +161,7 @@ class ShowAgoraKitManager: NSObject {
     }
     
     /// 切换连麦角色
-    func switchRole(role: AgoraClientRole, uid: String?, canvasView: UIView) {
+    func switchRole(role: AgoraClientRole, uid: String?, canvasView: UIView?) {
         let options = AgoraRtcChannelMediaOptions()
         options.clientRoleType = role
         options.publishMicrophoneTrack = role == .broadcaster
@@ -149,8 +172,9 @@ class ShowAgoraKitManager: NSObject {
         videoCanvas.uid = UInt(uid ?? "0") ?? 0
         videoCanvas.renderMode = .hidden
         videoCanvas.view = canvasView
-        if uid == VLUserCenter.user.id {
+        if uid == VLUserCenter.user.id && canvasView != nil {
             agoraKit.setupLocalVideo(videoCanvas)
+            agoraKit.startPreview()
         } else {
             agoraKit.setupRemoteVideo(videoCanvas)
         }
@@ -249,6 +273,7 @@ class ShowAgoraKitManager: NSObject {
             canvas.uid = UInt(ownerId) ?? 0
             agoraKit.setupRemoteVideo(canvas)
         }
+        moderationAudio(channelName: channelName, role: role)
         return ret
     }
 }
