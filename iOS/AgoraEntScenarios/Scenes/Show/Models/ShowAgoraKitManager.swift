@@ -62,7 +62,7 @@ class ShowAgoraKitManager: NSObject {
     
     private lazy var canvas: AgoraRtcVideoCanvas = {
         let canvas = AgoraRtcVideoCanvas()
-        canvas.renderMode = .hidden
+        canvas.renderMode = .fit
         canvas.mirrorMode = .disabled
         return canvas
     }()
@@ -157,7 +157,7 @@ class ShowAgoraKitManager: NSObject {
         agoraKit.setClientRole(role)
         let videoCanvas = AgoraRtcVideoCanvas()
         videoCanvas.uid = UInt(uid ?? "0") ?? 0
-        videoCanvas.renderMode = .hidden
+        videoCanvas.renderMode = .fit
         videoCanvas.view = canvasView
         if uid == VLUserCenter.user.id && canvasView != nil {
             agoraKit.setupLocalVideo(videoCanvas)
@@ -230,7 +230,7 @@ class ShowAgoraKitManager: NSObject {
             let videoCanvas = AgoraRtcVideoCanvas()
             videoCanvas.uid = uid
             videoCanvas.view = view
-            videoCanvas.renderMode = .hidden
+            videoCanvas.renderMode = .fit
             self.agoraKit.setupRemoteVideoEx(videoCanvas, connection: connection)
         }
         exConnection = connection
