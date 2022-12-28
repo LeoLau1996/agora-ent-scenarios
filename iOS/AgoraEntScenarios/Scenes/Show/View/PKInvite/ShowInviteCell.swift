@@ -11,14 +11,14 @@ import Agora_Scene_Utils
 enum ShowPKInviteStatus: CaseIterable {
     case invite
     case waitting
-    case pking
+    case interacting
     case refused
     
     var title: String {
         switch self {
         case .invite: return "邀请".show_localized
         case .waitting: return "邀请中".show_localized
-        case .pking: return "PK中".show_localized
+        case .interacting: return "Interacting".show_localized
         case .refused: return "已拒绝".show_localized
         }
     }
@@ -115,7 +115,7 @@ class ShowPKInviteViewCell: ShowInviteCell {
             }
             
             guard let info = pkUser else { return }
-            avatarImageView.sd_setImage(with: URL(string: info.ownerAvater ?? ""),
+            avatarImageView.sd_setImage(with: URL(string: info.ownerAvatar ?? ""),
                                         placeholderImage: UIImage.show_sceneImage(name: "show_default_avatar"))
             nameLabel.text = info.ownerName
         }
@@ -134,7 +134,7 @@ class ShowPKInviteViewCell: ShowInviteCell {
     }
     
     private func _refreshPKStatus() {
-        var stauts: ShowPKInviteStatus = pkUser?.interactStatus == .pking ? .pking : .invite
+        var stauts: ShowPKInviteStatus = (pkUser?.interactStatus.isInteracting ?? false) ? .interacting : .invite
         if stauts == .invite {
             stauts = pkInvitation?.status == .waitting ? .waitting : .invite
         }
@@ -144,7 +144,7 @@ class ShowPKInviteViewCell: ShowInviteCell {
     @objc
     fileprivate override func onTapStatusButton(sender: UIButton) {
         super.onTapStatusButton(sender: sender)
-        guard let invitation = pkUser else {
+        guard let invitation = pkUser, invitation.interactStatus == .idle else {
             return
         }
 
@@ -243,17 +243,17 @@ class ShowSeatApplyAndInviteViewCell: ShowInviteCell {
     fileprivate override func onTapStatusButton(sender: UIButton) {
         super.onTapStatusButton(sender: sender)
         if let model = seatApplyModel, sender.tag == 1 {
-            AppContext.showServiceImp.acceptMicSeatApply(apply: model) { _ in
-                self.refreshDataClosure?()
+            AppContext.showServiceImp.acceptMicSeatApply(apply: model) {[weak self] _ in
+                self?.refreshDataClosure?()
             }
         } else if let model = seatInvitationModel {
-            AppContext.showServiceImp.createMicSeatInvitation(user: model) { error in
+            AppContext.showServiceImp.createMicSeatInvitation(user: model) {[weak self] error in
                 if let err = error {
                     ToastView.show(text: err.localizedDescription)
                     return
                 }
                 
-                self.refreshDataClosure?()
+                self?.refreshDataClosure?()
             }
         }
     }

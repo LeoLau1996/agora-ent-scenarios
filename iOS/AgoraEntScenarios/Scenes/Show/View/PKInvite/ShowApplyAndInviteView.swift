@@ -98,7 +98,17 @@ class ShowApplyAndInviteView: UIView {
     private var tipsViewHeightCons: NSLayoutConstraint?
     private var roomId: String?
     private var type: ShowApplyAndInviteType = .apply
-    private var seatMicModel: ShowInteractionInfo?
+    var seatMicModel: ShowInteractionInfo? {
+        didSet {
+            if seatMicModel == oldValue {
+                return
+            }
+            self.tipsContainerView.isHidden = seatMicModel == nil
+            self.tipsLabel.text = String(format: "与%@连麦中".show_localized, seatMicModel?.userName ?? "")
+            self.updateLayout(isHidden: seatMicModel == nil)
+            self.tableView.reloadData()
+        }
+    }
     
     init(roomId: String?) {
         super.init(frame: .zero)
@@ -118,36 +128,25 @@ class ShowApplyAndInviteView: UIView {
         } else {
             getInviteList()
         }
-        getApplyInfo()
     }
     
     private func getApplyList() {
-        AppContext.showServiceImp.getAllMicSeatApplyList { _, list in
+        AppContext.showServiceImp.getAllMicSeatApplyList {[weak self] _, list in
             guard let list = list?.filterDuplicates({ $0.userId }) else { return }
-            self.tableView.dataArray = list.filter({ $0.status == .waitting })
+            self?.tableView.dataArray = list.filter({ $0.status == .waitting })
         }
     }
     private func getInviteList() {
-        AppContext.showServiceImp.getAllUserList { _, list in
+        AppContext.showServiceImp.getAllUserList {[weak self] _, list in
             guard let list = list?.filter({$0.userId != VLUserCenter.user.id}) else { return }
-            self.tableView.dataArray = list.filter({ $0.status != .accepted })
+            self?.tableView.dataArray = list.filter({ $0.status != .accepted })
         }
     }
-    private func getApplyInfo() {
-        AppContext.showServiceImp.getAllInterationList { _, list in
-            guard let list = list?.filterDuplicates({ $0.userId }) else { return }
-            let model = list.filter({ $0.interactStatus == .onSeat }).first
-            self.tipsContainerView.isHidden = model == nil
-            self.tipsLabel.text = String(format: "与%@连麦中".show_localized, model?.userName ?? "")
-            self.updateLayout(isHidden: model == nil)
-            self.seatMicModel = model
-        }
-        
-    }
+    
     private func getApplyPKInfo() {
-        AppContext.showServiceImp.getCurrentApplyUser(roomId: roomId) { roomModel in
-            self.tipsContainerView.isHidden = roomModel == nil
-            self.tipsLabel.text = String(format: "与主播%@PK中".show_localized, roomModel?.ownerName ?? "")
+        AppContext.showServiceImp.getCurrentApplyUser(roomId: roomId) {[weak self] roomModel in
+            self?.tipsContainerView.isHidden = roomModel == nil
+            self?.tipsLabel.text = String(format: "与主播%@PK中".show_localized, roomModel?.ownerName ?? "")
         }
     }
     private func getApplyLinkInfo() {

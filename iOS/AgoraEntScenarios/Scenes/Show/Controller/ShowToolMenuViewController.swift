@@ -35,9 +35,10 @@ class ShowToolMenuViewController: UIViewController {
     var selectedMap: [ShowToolMenuType: Bool] = [ShowToolMenuType: Bool]() {
         didSet {
             self.menuView?.selectedMap = selectedMap
+            updateLayoutForType(type)
         }
     }
-    var delegate: ShowToolMenuViewControllerDelegate?
+    weak var delegate: ShowToolMenuViewControllerDelegate?
     
     private var menuView: ShowToolMenuView?
     

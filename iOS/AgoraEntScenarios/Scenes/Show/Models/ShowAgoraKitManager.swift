@@ -9,6 +9,39 @@ import Foundation
 import AgoraRtcKit
 import UIKit
 
+//TODO: fix retain cycle
+class ShowAgoraExProxy: NSObject, AgoraRtcEngineDelegate {
+    weak var delegate: AgoraRtcEngineDelegate?
+    
+    func rtcEngine(_ engine: AgoraRtcEngineKit, reportRtcStats stats: AgoraChannelStats) {
+        delegate?.rtcEngine?(engine, reportRtcStats: stats)
+    }
+
+    func rtcEngine(_ engine: AgoraRtcEngineKit, localAudioStats stats: AgoraRtcLocalAudioStats) {
+        delegate?.rtcEngine?(engine, localAudioStats: stats)
+    }
+    
+    func rtcEngine(_ engine: AgoraRtcEngineKit, localVideoStats stats: AgoraRtcLocalVideoStats, sourceType: AgoraVideoSourceType) {
+        delegate?.rtcEngine?(engine, localVideoStats: stats, sourceType: sourceType)
+    }
+    
+    func rtcEngine(_ engine: AgoraRtcEngineKit, remoteVideoStats stats: AgoraRtcRemoteVideoStats) {
+        delegate?.rtcEngine?(engine, remoteVideoStats: stats)
+    }
+    
+    func rtcEngine(_ engine: AgoraRtcEngineKit, remoteAudioStats stats: AgoraRtcRemoteAudioStats) {
+        delegate?.rtcEngine?(engine, remoteAudioStats: stats)
+    }
+    
+    func rtcEngine(_ engine: AgoraRtcEngineKit, uplinkNetworkInfoUpdate networkInfo: AgoraUplinkNetworkInfo) {
+        delegate?.rtcEngine?(engine, uplinkNetworkInfoUpdate: networkInfo)
+    }
+    
+    func rtcEngine(_ engine: AgoraRtcEngineKit, downlinkNetworkInfoUpdate networkInfo: AgoraDownlinkNetworkInfo) {
+        delegate?.rtcEngine?(engine, downlinkNetworkInfoUpdate: networkInfo)
+    }
+}
+
 class ShowAgoraKitManager: NSObject {
     /*
     lazy var musicDataArray: [ShowMusicConfigData] = {
@@ -71,20 +104,21 @@ class ShowAgoraKitManager: NSObject {
     
     deinit {
         AgoraRtcEngineKit.destroy()
-        print("--ShowAgoraKitManager deinit--AgoraRtcEngineKit.destroy----")
+        print("deinit-- ShowAgoraKitManager")
     }
     
     override init() {
         super.init()
         agoraKit = AgoraRtcEngineKit.sharedEngine(with: rtcEngineConfig, delegate: nil)
         setupContentInspectConfig()
+        print("init-- ShowAgoraKitManager")
     }
     
     //MARK: private
     private func setupContentInspectConfig() {
         let config = AgoraContentInspectConfig()
         let dic: [String: String] = [
-            "userNo": VLUserCenter.user.id,
+            "id": VLUserCenter.user.id,
             "sceneName": "show"
         ]
         
@@ -105,7 +139,8 @@ class ShowAgoraKitManager: NSObject {
     /// 语音审核
     private func moderationAudio(channelName: String, role: AgoraClientRole) {
         guard role == .broadcaster else { return }
-        let userInfo = ["userId": VLUserCenter.user.id,
+        let userInfo = ["id": VLUserCenter.user.id,
+                        "sceneName": "show",
                         "userName": VLUserCenter.user.name]
         let parasm: [String: Any] = ["appId": KeyCenter.AppId,
                                      "channelName": channelName,
@@ -120,7 +155,6 @@ class ShowAgoraKitManager: NSObject {
             print(errr)
         }
     }
-    
     
     /// 初始化并预览
     /// - Parameter canvasView: 画布
@@ -161,18 +195,22 @@ class ShowAgoraKitManager: NSObject {
     }
     
     /// 切换连麦角色
-    func switchRole(role: AgoraClientRole, uid: String?, canvasView: UIView?) {
-        let options = AgoraRtcChannelMediaOptions()
+    func switchRole(role: AgoraClientRole,
+                    options:AgoraRtcChannelMediaOptions,
+                    uid: String?,
+                    canvasView: UIView?) {
+//        let options = AgoraRtcChannelMediaOptions()
         options.clientRoleType = role
-        options.publishMicrophoneTrack = role == .broadcaster
-        options.publishCameraTrack = role == .broadcaster
+//        options.publishMicrophoneTrack = role == .broadcaster
+//        options.publishCameraTrack = role == .broadcaster
         agoraKit.updateChannel(with: options)
         agoraKit.setClientRole(role)
+        guard canvasView != nil else { return }
         let videoCanvas = AgoraRtcVideoCanvas()
         videoCanvas.uid = UInt(uid ?? "0") ?? 0
         videoCanvas.renderMode = .hidden
         videoCanvas.view = canvasView
-        if uid == VLUserCenter.user.id && canvasView != nil {
+        if uid == VLUserCenter.user.id {
             agoraKit.setupLocalVideo(videoCanvas)
             agoraKit.startPreview()
         } else {
@@ -215,6 +253,7 @@ class ShowAgoraKitManager: NSObject {
     
     func joinChannelEx(channelName: String?,
                        ownerId: String?,
+                       options:AgoraRtcChannelMediaOptions,
                        view: UIView,
                        role: AgoraClientRole) {
         
@@ -222,7 +261,7 @@ class ShowAgoraKitManager: NSObject {
         mediaOptions.autoSubscribeAudio = true
         mediaOptions.autoSubscribeVideo = true
         mediaOptions.publishCameraTrack = false
-        mediaOptions.publishMicrophoneTrack = role == .broadcaster
+        mediaOptions.publishMicrophoneTrack = options.publishMicrophoneTrack//role == .broadcaster
         mediaOptions.clientRoleType = role
     
         let connection = AgoraRtcConnection()
@@ -232,10 +271,14 @@ class ShowAgoraKitManager: NSObject {
         NetworkManager.shared.generateToken(channelName: channelName ?? "", 
                                             uid: VLUserCenter.user.id,
                                             tokenType: .token007,
-                                            type: .rtc) { token in
+                                            type: .rtc) {[weak self] token in
+            guard let self = self else { return }
+            //TODO: retain cycle in joinChannelEx
+            let proxy = ShowAgoraExProxy()
+            proxy.delegate = self.delegate
             self.agoraKit.joinChannelEx(byToken: token,
                                         connection: connection,
-                                        delegate: self.delegate,
+                                        delegate: proxy,
                                         mediaOptions: mediaOptions,
                                         joinSuccess: nil)
             
@@ -284,6 +327,10 @@ extension ShowAgoraKitManager: AgoraVideoFrameDelegate {
     func onCapture(_ videoFrame: AgoraOutputVideoFrame) -> Bool {
         videoFrame.pixelBuffer = ByteBeautyManager.shareManager.processFrame(pixelBuffer: videoFrame.pixelBuffer)
         return true
+    }
+    
+    func onRenderVideoFrame(_ videoFrame: AgoraOutputVideoFrame, uid: UInt, channelId: String) -> Bool {
+        true
     }
     
     func getVideoFormatPreference() -> AgoraVideoFormat {
