@@ -29,15 +29,23 @@ class AdvanceSettingDialog(context: Context) : BottomFullDialog(context) {
         const val ITEM_ID_SWITCH_VIDEO_NOISE_REDUCE = ITEM_ID_SWITCH_BASE + 4
         const val ITEM_ID_SWITCH_BITRATE_SAVE = ITEM_ID_SWITCH_BASE + 5
         const val ITEM_ID_SWITCH_EAR_BACK = ITEM_ID_SWITCH_BASE + 6
+        const val ITEM_ID_SWITCH_BFRAME = ITEM_ID_SWITCH_BASE + 7
+        const val ITEM_ID_SWITCH_EXPOSUREFACE = ITEM_ID_SWITCH_BASE + 8
 
         private const val ITEM_ID_SEEKBAR_BASE = ITEM_ID_SWITCH_BASE shl 8
         const val ITEM_ID_SEEKBAR_BITRATE = ITEM_ID_SEEKBAR_BASE + 1
         const val ITEM_ID_SEEKBAR_VOCAL_VOLUME = ITEM_ID_SEEKBAR_BASE + 2
         const val ITEM_ID_SEEKBAR_MUSIC_VOLUME = ITEM_ID_SEEKBAR_BASE + 3
+        const val ITEM_ID_SEEKBAR_COLOR_ENHANCE_STRENGTH = ITEM_ID_SEEKBAR_BASE + 4
+        const val ITEM_ID_SEEKBAR_COLOR_ENHANCE_SKINPROTECT = ITEM_ID_SEEKBAR_BASE + 5
 
         private const val ITEM_ID_SELECTOR_BASE = ITEM_ID_SEEKBAR_BASE shl 8
         const val ITEM_ID_SELECTOR_RESOLUTION = ITEM_ID_SELECTOR_BASE + 1
         const val ITEM_ID_SELECTOR_FRAME_RATE = ITEM_ID_SELECTOR_BASE + 2
+        const val ITEM_ID_SELECTOR_DARK_ENHANCE_MODE = ITEM_ID_SELECTOR_BASE + 3
+        const val ITEM_ID_SELECTOR_DARK_ENHANCE_LEVEL = ITEM_ID_SELECTOR_BASE + 4
+        const val ITEM_ID_SELECTOR_VIDEO_NOISE_REDUCE_MODE = ITEM_ID_SELECTOR_BASE + 5
+        const val ITEM_ID_SELECTOR_VIDEO_NOISE_REDUCE_LEVEL = ITEM_ID_SELECTOR_BASE + 6
 
         private const val VIEW_TYPE_VIDEO_SETTING = 0
         private const val VIEW_TYPE_AUDIO_SETTING = 1
@@ -78,6 +86,16 @@ class AdvanceSettingDialog(context: Context) : BottomFullDialog(context) {
             ITEM_ID_SWITCH_EAR_BACK,
             VideoSetting.getCurrBroadcastSetting().audio.inEarMonitoring.toInt()
         )
+        put(
+            ITEM_ID_SWITCH_BFRAME,
+            VideoSetting.getCurrBroadcastSetting().video.bFrame.toInt()
+        )
+        put(
+            ITEM_ID_SWITCH_EXPOSUREFACE,
+            VideoSetting.getCurrBroadcastSetting().video.exposureface.toInt()
+        )
+
+
         put(ITEM_ID_SEEKBAR_BITRATE, VideoSetting.getCurrBroadcastSetting().video.bitRate)
         put(
             ITEM_ID_SEEKBAR_VOCAL_VOLUME,
@@ -88,12 +106,38 @@ class AdvanceSettingDialog(context: Context) : BottomFullDialog(context) {
             VideoSetting.getCurrBroadcastSetting().audio.audioMixingVolume
         )
         put(
+            ITEM_ID_SEEKBAR_COLOR_ENHANCE_STRENGTH,
+            (VideoSetting.getCurrBroadcastSetting().video.colorEnhanceStrength * 100).toInt()
+        )
+        put(
+            ITEM_ID_SEEKBAR_COLOR_ENHANCE_SKINPROTECT,
+            (VideoSetting.getCurrBroadcastSetting().video.colorEnhanceSkinProtect * 100).toInt()
+        )
+
+
+        put(
             ITEM_ID_SELECTOR_RESOLUTION,
             VideoSetting.getCurrBroadcastSetting().video.encodeResolution.toIndex()
         )
         put(
             ITEM_ID_SELECTOR_FRAME_RATE,
             VideoSetting.getCurrBroadcastSetting().video.frameRate.toIndex()
+        )
+        put(
+            ITEM_ID_SELECTOR_DARK_ENHANCE_MODE,
+            VideoSetting.getCurrBroadcastSetting().video.lowLightEnhanceMode.toIndex()
+        )
+        put(
+            ITEM_ID_SELECTOR_DARK_ENHANCE_LEVEL,
+            VideoSetting.getCurrBroadcastSetting().video.lowLightEnhanceLevel.toIndex()
+        )
+        put(
+            ITEM_ID_SELECTOR_VIDEO_NOISE_REDUCE_MODE,
+            VideoSetting.getCurrBroadcastSetting().video.videoDenoiserMode.toIndex()
+        )
+        put(
+            ITEM_ID_SELECTOR_VIDEO_NOISE_REDUCE_LEVEL,
+            VideoSetting.getCurrBroadcastSetting().video.videoDenoiserLevel.toIndex()
         )
     }
 
@@ -131,6 +175,9 @@ class AdvanceSettingDialog(context: Context) : BottomFullDialog(context) {
 
         mBinding.ivBack.setOnClickListener {
             dismiss()
+        }
+        mBinding.tvParameter.setOnClickListener {
+            showParameterDialog()
         }
 
         mBinding.viewPager2.adapter = object : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
@@ -185,6 +232,16 @@ class AdvanceSettingDialog(context: Context) : BottomFullDialog(context) {
         itemShowTextMap[itemId] = showText
     }
 
+    private fun showParameterDialog() {
+        ParameterDialog(context).apply {
+            setEditText(VideoSetting.getCurrBroadcastSetting().params)
+            setOnConfirmClickListener { _, params ->
+                VideoSetting.updateBroadcastSetting(params = params)
+            }
+            show()
+        }
+    }
+
     private fun updateAudioSettingView(binding: ShowSettingAdvanceAudioBinding) {
         setupSwitchItem(
             ITEM_ID_SWITCH_EAR_BACK,
@@ -212,7 +269,7 @@ class AdvanceSettingDialog(context: Context) : BottomFullDialog(context) {
         setupSwitchItem(
             ITEM_ID_SWITCH_QUALITY_ENHANCE,
             binding.qualityEnhance,
-            R.string.show_setting_advance_quality_enhance,
+            R.string.show_setting_advance_quality_enhance_h265,
             R.string.show_setting_advance_quality_enhance_tip
         )
         setupSwitchItem(
@@ -221,11 +278,39 @@ class AdvanceSettingDialog(context: Context) : BottomFullDialog(context) {
             R.string.show_setting_advance_color_enhance,
             R.string.show_setting_advance_color_enhance_tip
         )
+        setupSeekbarItem(
+            ITEM_ID_SEEKBAR_COLOR_ENHANCE_STRENGTH,
+            binding.colorEnhanceStrength,
+            R.string.show_setting_advance_color_enhance_strength,
+            "%d", 0, 100
+        )
+        setupSeekbarItem(
+            ITEM_ID_SEEKBAR_COLOR_ENHANCE_SKINPROTECT,
+            binding.colorEnhanceSkinProtect,
+            R.string.show_setting_advance_color_enhance_skinprotect,
+            "%d", 0, 100
+        )
         setupSwitchItem(
             ITEM_ID_SWITCH_DARK_ENHANCE,
             binding.darkEnhance,
             R.string.show_setting_advance_dark_enhance,
             R.string.show_setting_advance_dark_enhance_tip
+        )
+        setupSelectorItem(
+            ITEM_ID_SELECTOR_DARK_ENHANCE_MODE,
+            binding.darkEnhanceMode,
+            R.string.show_setting_advance_dark_enhance_mode,
+            VideoSetting.LowLightEnhanceModeList.map {
+                it.toString()
+            }
+        )
+        setupSelectorItem(
+            ITEM_ID_SELECTOR_DARK_ENHANCE_LEVEL,
+            binding.darkEnhanceLevel,
+            R.string.show_setting_advance_dark_enhance_level,
+            VideoSetting.LowLightEnhanceLevelList.map {
+                it.toString()
+            }
         )
         setupSwitchItem(
             ITEM_ID_SWITCH_VIDEO_NOISE_REDUCE,
@@ -233,11 +318,39 @@ class AdvanceSettingDialog(context: Context) : BottomFullDialog(context) {
             R.string.show_setting_advance_video_noise_reduce,
             R.string.show_setting_advance_video_noise_reduce_tip
         )
+        setupSelectorItem(
+            ITEM_ID_SELECTOR_VIDEO_NOISE_REDUCE_MODE,
+            binding.videoNoiseReductionMode,
+            R.string.show_setting_advance_video_noise_reduce_mode,
+            VideoSetting.VideoDenoiserModeList.map {
+                it.toString()
+            }
+        )
+        setupSelectorItem(
+            ITEM_ID_SELECTOR_VIDEO_NOISE_REDUCE_LEVEL,
+            binding.videoNoiseReductionLevel,
+            R.string.show_setting_advance_video_noise_reduce_level,
+            VideoSetting.VideoDenoiserLevelList.map {
+                it.toString()
+            }
+        )
         setupSwitchItem(
             ITEM_ID_SWITCH_BITRATE_SAVE,
             binding.bitrateSave,
             R.string.show_setting_advance_bitrate_save,
             R.string.show_setting_advance_bitrate_save_tip
+        )
+        setupSwitchItem(
+            ITEM_ID_SWITCH_BFRAME,
+            binding.bFrame,
+            R.string.show_setting_advance_bframe,
+            R.string.show_setting_advance_bframe
+        )
+        setupSwitchItem(
+            ITEM_ID_SWITCH_EXPOSUREFACE,
+            binding.exposureFace,
+            R.string.show_setting_advance_exposure_face,
+            R.string.show_setting_advance_exposure_face
         )
         setupSelectorItem(
             ITEM_ID_SELECTOR_RESOLUTION,
@@ -376,6 +489,8 @@ class AdvanceSettingDialog(context: Context) : BottomFullDialog(context) {
             ITEM_ID_SWITCH_VIDEO_NOISE_REDUCE -> VideoSetting.updateBroadcastSetting(videoDenoiser = isChecked)
             ITEM_ID_SWITCH_BITRATE_SAVE -> VideoSetting.updateBroadcastSetting(PVC = isChecked)
             ITEM_ID_SWITCH_EAR_BACK -> VideoSetting.updateBroadcastSetting(inEarMonitoring = isChecked)
+            ITEM_ID_SWITCH_BFRAME -> VideoSetting.updateBroadcastSetting(bFrame = isChecked)
+            ITEM_ID_SWITCH_EXPOSUREFACE -> VideoSetting.updateBroadcastSetting(exposureface = isChecked)
         }
     }
 
@@ -386,13 +501,34 @@ class AdvanceSettingDialog(context: Context) : BottomFullDialog(context) {
                 recordingSignalVolume = value
             )
             ITEM_ID_SEEKBAR_MUSIC_VOLUME -> VideoSetting.updateBroadcastSetting(audioMixingVolume = value)
+            ITEM_ID_SEEKBAR_COLOR_ENHANCE_STRENGTH -> VideoSetting.updateBroadcastSetting(
+                colorEnhanceStrength = value.toFloat() / 100
+            )
+            ITEM_ID_SEEKBAR_COLOR_ENHANCE_SKINPROTECT -> VideoSetting.updateBroadcastSetting(
+                colorEnhanceSkinProtect = value.toFloat() / 100
+            )
         }
     }
 
     private fun onSelectorChanged(itemId: Int, index: Int) {
         when (itemId) {
-            ITEM_ID_SELECTOR_RESOLUTION -> VideoSetting.updateBroadcastSetting(encoderResolution = VideoSetting.ResolutionList[index], captureResolution = VideoSetting.ResolutionList[index])
+            ITEM_ID_SELECTOR_RESOLUTION -> VideoSetting.updateBroadcastSetting(
+                encoderResolution = VideoSetting.ResolutionList[index],
+                captureResolution = VideoSetting.ResolutionList[index]
+            )
             ITEM_ID_SELECTOR_FRAME_RATE -> VideoSetting.updateBroadcastSetting(frameRate = VideoSetting.FrameRateList[index])
+            ITEM_ID_SELECTOR_DARK_ENHANCE_MODE -> VideoSetting.updateBroadcastSetting(
+                lowLightEnhanceMode = VideoSetting.LowLightEnhanceModeList[index]
+            )
+            ITEM_ID_SELECTOR_DARK_ENHANCE_LEVEL -> VideoSetting.updateBroadcastSetting(
+                lowLightEnhanceLevel = VideoSetting.LowLightEnhanceLevelList[index]
+            )
+            ITEM_ID_SELECTOR_VIDEO_NOISE_REDUCE_MODE -> VideoSetting.updateBroadcastSetting(
+                videoDenoiserMode = VideoSetting.VideoDenoiserModeList[index]
+            )
+            ITEM_ID_SELECTOR_VIDEO_NOISE_REDUCE_LEVEL -> VideoSetting.updateBroadcastSetting(
+                videoDenoiserLevel = VideoSetting.VideoDenoiserLevelList[index]
+            )
         }
     }
 }

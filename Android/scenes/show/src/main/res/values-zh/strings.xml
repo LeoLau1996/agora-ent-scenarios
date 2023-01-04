@@ -193,4 +193,12 @@
     <string name="show_setting_advance_sr_1_5">x1.5</string>
     <string name="show_setting_advance_setting_parameter">parameter</string>
     <string name="show_parameter_title">Private parameters</string>
+    <string name="show_setting_advance_color_enhance_strength">色彩增强strength</string>
+    <string name="show_setting_advance_color_enhance_skinprotect">色彩增强skinProtect</string>
+    <string name="show_setting_advance_dark_enhance_mode">暗光增强mode</string>
+    <string name="show_setting_advance_dark_enhance_level">暗光增强level</string>
+    <string name="show_setting_advance_video_noise_reduce_mode">视频降噪mode</string>
+    <string name="show_setting_advance_video_noise_reduce_level">视频降噪level</string>
+    <string name="show_setting_advance_bframe">B帧</string>
+    <string name="show_setting_advance_exposure_face">ExposureFace</string>
 </resources>

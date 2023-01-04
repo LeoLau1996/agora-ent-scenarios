@@ -12,6 +12,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:paddingHorizontal="20dp"
+            android:paddingBottom="20dp"
             android:orientation="vertical">
 
             <include
@@ -23,15 +24,47 @@
                 layout="@layout/show_setting_advance_item_switch"/>
 
             <include
+                android:id="@+id/colorEnhanceStrength"
+                layout="@layout/show_setting_advance_item_seekbar"/>
+
+            <include
+                android:id="@+id/colorEnhanceSkinProtect"
+                layout="@layout/show_setting_advance_item_seekbar"/>
+
+            <include
                 android:id="@+id/darkEnhance"
                 layout="@layout/show_setting_advance_item_switch"/>
+
+            <include
+                android:id="@+id/darkEnhanceMode"
+                layout="@layout/show_setting_advance_item_selector"/>
+
+            <include
+                android:id="@+id/darkEnhanceLevel"
+                layout="@layout/show_setting_advance_item_selector"/>
 
             <include
                 android:id="@+id/videoNoiseReduction"
                 layout="@layout/show_setting_advance_item_switch"/>
 
             <include
+                android:id="@+id/videoNoiseReductionMode"
+                layout="@layout/show_setting_advance_item_selector"/>
+
+            <include
+                android:id="@+id/videoNoiseReductionLevel"
+                layout="@layout/show_setting_advance_item_selector"/>
+
+            <include
                 android:id="@+id/bitrateSave"
+                layout="@layout/show_setting_advance_item_switch"/>
+
+            <include
+                android:id="@+id/bFrame"
+                layout="@layout/show_setting_advance_item_switch"/>
+
+            <include
+                android:id="@+id/exposureFace"
                 layout="@layout/show_setting_advance_item_switch"/>
 
             <include

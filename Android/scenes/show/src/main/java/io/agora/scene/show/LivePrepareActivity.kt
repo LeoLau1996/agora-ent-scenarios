@@ -125,6 +125,13 @@ class LivePrepareActivity : ComponentActivity() {
         }
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        if (!isFinishToLiveDetail) {
+            VideoSetting.updateBroadcastSetting(deviceLevel = VideoSetting.DeviceLevel.Low)
+        }
+    }
+
     private fun initRtcEngine() {
         mRtcEngine.setupLocalVideo(
             VideoCanvas(SurfaceView(this).apply {

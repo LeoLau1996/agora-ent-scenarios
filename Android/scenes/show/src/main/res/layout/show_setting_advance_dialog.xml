@@ -28,6 +28,16 @@
             android:layout_gravity="center"
             android:text="@string/show_setting_advance_setting"/>
 
+        <TextView
+            android:id="@+id/tvParameter"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="#7A59FB"
+            android:padding="16dp"
+            android:textSize="12sp"
+            android:layout_gravity="end|center_vertical"
+            android:text="@string/show_setting_advance_setting_parameter"/>
+
     </FrameLayout>
 
     <com.google.android.material.tabs.TabLayout

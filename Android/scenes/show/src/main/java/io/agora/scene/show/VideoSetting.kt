@@ -79,15 +79,36 @@ object VideoSetting {
         MANUAL(LowLightEnhanceOptions.LOW_LIGHT_ENHANCE_MANUAL)
     }
 
+    fun LowLightEnhanceMode.toIndex() = LowLightEnhanceModeList.indexOf(this)
+
+    val LowLightEnhanceModeList = listOf(
+        LowLightEnhanceMode.AUTO,
+        LowLightEnhanceMode.MANUAL
+    )
+
     enum class LowLightEnhanceLevel(val value: Int){
         HIGH_QUALITY(LowLightEnhanceOptions.LOW_LIGHT_ENHANCE_LEVEL_HIGH_QUALITY),
         FAST(LowLightEnhanceOptions.LOW_LIGHT_ENHANCE_LEVEL_FAST)
     }
 
+    fun LowLightEnhanceLevel.toIndex() = LowLightEnhanceLevelList.indexOf(this)
+
+    val LowLightEnhanceLevelList = listOf(
+        LowLightEnhanceLevel.HIGH_QUALITY,
+        LowLightEnhanceLevel.FAST
+    )
+
     enum class VideoDenoiserMode(val value: Int){
         AUTO(VideoDenoiserOptions.VIDEO_DENOISER_AUTO),
         MANUAL(VideoDenoiserOptions.VIDEO_DENOISER_MANUAL)
     }
+
+    fun VideoDenoiserMode.toIndex() = VideoDenoiserModeList.indexOf(this)
+
+    val VideoDenoiserModeList = listOf(
+        VideoDenoiserMode.AUTO,
+        VideoDenoiserMode.MANUAL
+    )
 
     enum class VideoDenoiserLevel(val value:Int){
         HIGH_QUALITY(VideoDenoiserOptions.VIDEO_DENOISER_LEVEL_HIGH_QUALITY),
@@ -95,6 +116,13 @@ object VideoSetting {
         STRENGTH(VideoDenoiserOptions.VIDEO_DENOISER_LEVEL_STRENGTH)
     }
 
+    fun VideoDenoiserLevel.toIndex() = VideoDenoiserLevelList.indexOf(this)
+
+    val VideoDenoiserLevelList = listOf(
+        VideoDenoiserLevel.HIGH_QUALITY,
+        VideoDenoiserLevel.FAST,
+        VideoDenoiserLevel.STRENGTH
+    )
 
     enum class DeviceLevel(val value: Int) {
         Low(0),
@@ -514,8 +542,14 @@ object VideoSetting {
             }
         }
         params?.let {
-            it.split(",").forEach { param ->
-                rtcEngine.setParameters(param)
+            it.split("},").let { list ->
+                list.forEachIndexed { index, param ->
+                    if (index == list.size - 1) {
+                        rtcEngine.setParameters(param)
+                    } else {
+                        rtcEngine.setParameters("$param}")
+                    }
+                }
             }
         }
     }
@@ -643,8 +677,14 @@ object VideoSetting {
         }
 
         params?.let {
-            it.split(",").forEach { param ->
-                rtcEngine.setParameters(param)
+            it.split("},").let { list ->
+                list.forEachIndexed { index, param ->
+                    if (index == list.size - 1) {
+                        rtcEngine.setParameters(param)
+                    } else {
+                        rtcEngine.setParameters("$param}")
+                    }
+                }
             }
         }
     }

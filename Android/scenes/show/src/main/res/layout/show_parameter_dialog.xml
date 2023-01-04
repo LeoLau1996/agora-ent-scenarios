@@ -38,6 +38,83 @@
 
     </FrameLayout>
 
+    <HorizontalScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingHorizontal="12dp">
+
+            <Button
+                android:id="@+id/btn1"
+                android:layout_width="50dp"
+                android:layout_height="wrap_content"
+                android:textSize="13sp"
+                android:text="{"/>
+
+            <Button
+                android:id="@+id/btn2"
+                android:layout_width="50dp"
+                android:layout_height="wrap_content"
+                android:textSize="13sp"
+                android:text="}"/>
+
+            <Button
+                android:id="@+id/btn3"
+                android:layout_width="50dp"
+                android:layout_height="wrap_content"
+                android:textSize="13sp"
+                android:text="＂"/>
+
+            <Button
+                android:id="@+id/btn8"
+                android:layout_width="50dp"
+                android:layout_height="wrap_content"
+                android:textSize="13sp"
+                android:text="."/>
+
+            <Button
+                android:id="@+id/btn9"
+                android:layout_width="50dp"
+                android:layout_height="wrap_content"
+                android:textSize="13sp"
+                android:text="_"/>
+
+            <Button
+                android:id="@+id/btn4"
+                android:layout_width="50dp"
+                android:layout_height="wrap_content"
+                android:textSize="13sp"
+                android:text=":"/>
+
+            <Button
+                android:id="@+id/btn5"
+                android:layout_width="50dp"
+                android:layout_height="wrap_content"
+                android:textSize="13sp"
+                android:text=","/>
+
+            <Button
+                android:id="@+id/btn6"
+                android:layout_width="60dp"
+                android:layout_height="wrap_content"
+                android:textSize="13sp"
+                android:text="左移"/>
+
+            <Button
+                android:id="@+id/btn7"
+                android:layout_width="60dp"
+                android:layout_height="wrap_content"
+                android:textSize="13sp"
+                android:text="右移"/>
+
+        </LinearLayout>
+
+    </HorizontalScrollView>
+
+
     <EditText
         android:id="@+id/editText"
         android:layout_width="match_parent"
@@ -48,7 +125,11 @@
         android:gravity="top"
         android:padding="8dp"
         android:textSize="15sp"
+        android:inputType="text"
+        android:digits="@string/show_parameter_edit_digits"
         android:textColor="@android:color/black"
+        android:hint="@string/show_parameter_edit_hint"
+        android:textColorHint="@color/grey_d3"
         tools:text="1234555" />
 
 </LinearLayout>
