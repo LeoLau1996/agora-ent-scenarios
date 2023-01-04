@@ -139,6 +139,7 @@
     <string name="show_setting_advance_video_setting">视频设置</string>
     <string name="show_setting_advance_audio_setting">音频设置</string>
     <string name="show_setting_advance_quality_enhance">画质增强</string>
+    <string name="show_setting_advance_quality_enhance_h265">画质增强(H265)</string>
     <string name="show_setting_advance_ok">OK</string>
     <string name="show_setting_confirm">确认</string>
     <string name="show_setting_preset_title">画质推荐配置</string>
@@ -186,4 +187,12 @@
     <string name="show_setting_preset_audience_basic_title">基础模式</string>
     <string name="show_setting_preset_audience_basic_description">基础模式</string>
     <string name="show_live_prepare_setting">设置</string>
+    <string name="show_setting_advance_sr_close">关</string>
+    <string name="show_setting_advance_sr_1">x1</string>
+    <string name="show_setting_advance_sr_1_33">x1.33</string>
+    <string name="show_setting_advance_sr_2">x2</string>
+    <string name="show_setting_advance_sr_sharp">锐化</string>
+    <string name="show_setting_advance_sr_1_5">x1.5</string>
+    <string name="show_setting_advance_setting_parameter">parameter</string>
+    <string name="show_parameter_title">Private parameters</string>
 </resources>

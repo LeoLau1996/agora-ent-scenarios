@@ -18,9 +18,9 @@ import io.agora.scene.show.databinding.ShowLivePrepareActivityBinding
 import io.agora.scene.show.service.ShowRoomDetailModel
 import io.agora.scene.show.service.ShowServiceProtocol
 import io.agora.scene.show.utils.PermissionHelp
+import io.agora.scene.show.widget.AdvanceSettingDialog
 import io.agora.scene.show.widget.BeautyDialog
 import io.agora.scene.show.widget.PictureQualityDialog
-import io.agora.scene.show.widget.PresetDialog
 import io.agora.scene.widget.utils.StatusBarUtil
 
 class LivePrepareActivity : ComponentActivity() {
@@ -73,17 +73,17 @@ class LivePrepareActivity : ComponentActivity() {
             showPictureQualityDialog()
         }
         mBinding.tvSetting.setOnClickListener {
-            showPresetDialog()
+            showAdvanceSettingDialog()
         }
 
         checkRequirePerms {
             mBeautyProcessor.reset()
             initRtcEngine()
-            showPresetDialog()
+            showAdvanceSettingDialog()
         }
     }
 
-    private fun showPresetDialog() = PresetDialog(this).show()
+    private fun showAdvanceSettingDialog() = AdvanceSettingDialog(this).show()
 
     private fun checkRequirePerms(force: Boolean = false, granted: () -> Unit) {
         mPermissionHelp.checkCameraPerm(

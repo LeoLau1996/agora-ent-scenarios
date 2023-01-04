@@ -88,7 +88,7 @@ class PresetAudienceDialog(context: Context) : BottomFullDialog(context) {
         when (selectedLevel) {
             // 低端机：画质增强
             0 -> {
-                VideoSetting.updateAudioSetting(SR = VideoSetting.SuperResolution.SR_NONE)
+                VideoSetting.updateAudienceSetting(SR = VideoSetting.SuperResolution.SR_NONE)
                 VideoSetting.updateBroadcastSetting(
                     deviceLevel = VideoSetting.DeviceLevel.Low,
                     isByAudience = true
@@ -96,7 +96,7 @@ class PresetAudienceDialog(context: Context) : BottomFullDialog(context) {
             }
             // 中端机：画质增强
             1 -> {
-                VideoSetting.updateAudioSetting(SR = VideoSetting.SuperResolution.SR_1_5)
+                VideoSetting.updateAudienceSetting(SR = VideoSetting.SuperResolution.SR_1_5)
                 VideoSetting.updateBroadcastSetting(
                     deviceLevel = VideoSetting.DeviceLevel.Medium,
                     isByAudience = true
@@ -104,7 +104,7 @@ class PresetAudienceDialog(context: Context) : BottomFullDialog(context) {
             }
             // 高端机：画质增强
             2 -> {
-                VideoSetting.updateAudioSetting(SR = VideoSetting.SuperResolution.SR_2)
+                VideoSetting.updateAudienceSetting(SR = VideoSetting.SuperResolution.SR_2)
                 VideoSetting.updateBroadcastSetting(
                     deviceLevel = VideoSetting.DeviceLevel.High,
                     isByAudience = true
@@ -112,7 +112,7 @@ class PresetAudienceDialog(context: Context) : BottomFullDialog(context) {
             }
             // 低端机：基础
             3 -> {
-                VideoSetting.updateAudioSetting(SR = VideoSetting.SuperResolution.SR_NONE)
+                VideoSetting.updateAudienceSetting(SR = VideoSetting.SuperResolution.SR_NONE)
                 VideoSetting.updateBroadcastSetting(
                     deviceLevel = VideoSetting.DeviceLevel.Low,
                     isByAudience = true
@@ -120,7 +120,7 @@ class PresetAudienceDialog(context: Context) : BottomFullDialog(context) {
             }
             // 中端机：基础
             4 -> {
-                VideoSetting.updateAudioSetting(SR = VideoSetting.SuperResolution.SR_NONE)
+                VideoSetting.updateAudienceSetting(SR = VideoSetting.SuperResolution.SR_NONE)
                 VideoSetting.updateBroadcastSetting(
                     deviceLevel = VideoSetting.DeviceLevel.Medium,
                     isByAudience = true
@@ -128,7 +128,7 @@ class PresetAudienceDialog(context: Context) : BottomFullDialog(context) {
             }
             // 高端机：基础
             5 -> {
-                VideoSetting.updateAudioSetting(SR = VideoSetting.SuperResolution.SR_NONE)
+                VideoSetting.updateAudienceSetting(SR = VideoSetting.SuperResolution.SR_NONE)
                 VideoSetting.updateBroadcastSetting(
                     deviceLevel = VideoSetting.DeviceLevel.High,
                     isByAudience = true

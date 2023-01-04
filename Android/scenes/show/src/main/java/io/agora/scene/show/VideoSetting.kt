@@ -1,6 +1,9 @@
 package io.agora.scene.show
 
-import io.agora.rtc2.video.*
+import io.agora.rtc2.video.CameraCapturerConfiguration
+import io.agora.rtc2.video.LowLightEnhanceOptions
+import io.agora.rtc2.video.VideoDenoiserOptions
+import io.agora.rtc2.video.VideoEncoderConfiguration
 
 object VideoSetting {
 
@@ -38,6 +41,17 @@ object VideoSetting {
         Resolution.V_1080P
     )
 
+    fun SuperResolution.toIndex() = SuperResolutionList.indexOf(this)
+
+    val SuperResolutionList = listOf(
+        SuperResolution.SR_NONE,
+        SuperResolution.SR_1,
+        SuperResolution.SR_1_33,
+        SuperResolution.SR_1_5,
+        SuperResolution.SR_2,
+        SuperResolution.SR_SHARP,
+    )
+
     enum class FrameRate(val fps: Int) {
         FPS_1(1),
         FPS_7(7),
@@ -60,6 +74,28 @@ object VideoSetting {
         FrameRate.FPS_60,
     )
 
+    enum class LowLightEnhanceMode(val value: Int){
+        AUTO(LowLightEnhanceOptions.LOW_LIGHT_ENHANCE_AUTO),
+        MANUAL(LowLightEnhanceOptions.LOW_LIGHT_ENHANCE_MANUAL)
+    }
+
+    enum class LowLightEnhanceLevel(val value: Int){
+        HIGH_QUALITY(LowLightEnhanceOptions.LOW_LIGHT_ENHANCE_LEVEL_HIGH_QUALITY),
+        FAST(LowLightEnhanceOptions.LOW_LIGHT_ENHANCE_LEVEL_FAST)
+    }
+
+    enum class VideoDenoiserMode(val value: Int){
+        AUTO(VideoDenoiserOptions.VIDEO_DENOISER_AUTO),
+        MANUAL(VideoDenoiserOptions.VIDEO_DENOISER_MANUAL)
+    }
+
+    enum class VideoDenoiserLevel(val value:Int){
+        HIGH_QUALITY(VideoDenoiserOptions.VIDEO_DENOISER_LEVEL_HIGH_QUALITY),
+        FAST(VideoDenoiserOptions.VIDEO_DENOISER_LEVEL_FAST),
+        STRENGTH(VideoDenoiserOptions.VIDEO_DENOISER_LEVEL_STRENGTH)
+    }
+
+
     enum class DeviceLevel(val value: Int) {
         Low(0),
         Medium(1),
@@ -75,7 +111,8 @@ object VideoSetting {
      * 观众设置
      */
     data class AudienceSetting(
-        val video: Video
+        val video: Video,
+        val params: String = ""
     ) {
         data class Video(
             val SR: SuperResolution // 超分
@@ -87,14 +124,23 @@ object VideoSetting {
      */
     data class BroadcastSetting(
         val video: Video,
-        val audio: Audio
+        val audio: Audio,
+        val params: String = ""
     ) {
         data class Video(
             val H265: Boolean, // 画质增强
             val colorEnhance: Boolean, // 色彩增强
+            val colorEnhanceStrength: Float = 0.3f,
+            val colorEnhanceSkinProtect: Float = 0.3f,
             val lowLightEnhance: Boolean, // 暗光增强
+            val lowLightEnhanceMode: LowLightEnhanceMode = LowLightEnhanceMode.AUTO,
+            val lowLightEnhanceLevel: LowLightEnhanceLevel = LowLightEnhanceLevel.HIGH_QUALITY,
             val videoDenoiser: Boolean, // 视频降噪
+            val videoDenoiserMode: VideoDenoiserMode = VideoDenoiserMode.AUTO,
+            val videoDenoiserLevel: VideoDenoiserLevel = VideoDenoiserLevel.STRENGTH,
             val PVC: Boolean, // 码率节省
+            val bFrame: Boolean = false, // B帧
+            val exposureface: Boolean = false, // 曝光脸
             val captureResolution: Resolution, // 采集分辨率
             val encodeResolution: Resolution, // 编码分辨率
             val frameRate: FrameRate, // 帧率
@@ -228,16 +274,18 @@ object VideoSetting {
         )
     }
 
-    fun updateAudioSetting(
+    fun updateAudienceSetting(
         isJoinedRoom: Boolean = false,
-        SR: SuperResolution? = null
+        SR: SuperResolution? = null,
+        params: String? = null
     ) {
         currAudienceSetting = AudienceSetting(
             AudienceSetting.Video(
-                SR ?: currAudienceSetting.video.SR
-            )
+                SR ?: currAudienceSetting.video.SR,
+            ),
+            params?: currAudienceSetting.params
         )
-        updateRTCAudioSetting(isJoinedRoom, SR)
+        updateRTCAudioSetting(isJoinedRoom, SR, params)
     }
 
     fun updateBroadcastSetting(deviceLevel: DeviceLevel, isJoinedRoom: Boolean = false, isByAudience: Boolean = false) {
@@ -298,19 +346,32 @@ object VideoSetting {
         currBroadcastSetting = recommendSetting
         updateRTCBroadcastSetting(
             isJoinedRoom,
-            currBroadcastSetting.video.H265,
-            currBroadcastSetting.video.colorEnhance,
-            currBroadcastSetting.video.lowLightEnhance,
-            currBroadcastSetting.video.videoDenoiser,
-            currBroadcastSetting.video.PVC,
-            currBroadcastSetting.video.captureResolution,
-            currBroadcastSetting.video.encodeResolution,
-            currBroadcastSetting.video.frameRate,
-            currBroadcastSetting.video.bitRate,
 
-            currBroadcastSetting.audio.inEarMonitoring,
-            currBroadcastSetting.audio.recordingSignalVolume,
-            currBroadcastSetting.audio.audioMixingVolume
+            h265 = currBroadcastSetting.video.H265,
+
+            colorEnhance = currBroadcastSetting.video.colorEnhance,
+            colorEnhanceStrength = currBroadcastSetting.video.colorEnhanceStrength,
+            colorEnhanceSkinProtect = currBroadcastSetting.video.colorEnhanceSkinProtect,
+
+            lowLightEnhance = currBroadcastSetting.video.lowLightEnhance,
+            lowLightEnhanceMode = currBroadcastSetting.video.lowLightEnhanceMode,
+            lowLightEnhanceLevel = currBroadcastSetting.video.lowLightEnhanceLevel,
+
+            videoDenoiser = currBroadcastSetting.video.videoDenoiser,
+            videoDenoiserMode = currBroadcastSetting.video.videoDenoiserMode,
+            videoDenoiserLevel = currBroadcastSetting.video.videoDenoiserLevel,
+
+            PVC = currBroadcastSetting.video.PVC,
+            bFrame = currBroadcastSetting.video.bFrame,
+            exposureface = currBroadcastSetting.video.exposureface,
+            captureResolution = currBroadcastSetting.video.captureResolution,
+            encoderResolution = currBroadcastSetting.video.encodeResolution,
+            frameRate = currBroadcastSetting.video.frameRate,
+            bitRate = currBroadcastSetting.video.bitRate,
+
+            inEarMonitoring = currBroadcastSetting.audio.inEarMonitoring,
+            recordingSignalVolume = currBroadcastSetting.audio.recordingSignalVolume,
+            audioMixingVolume = currBroadcastSetting.audio.audioMixingVolume
         )
     }
 
@@ -319,9 +380,21 @@ object VideoSetting {
 
         h265: Boolean? = null,
         colorEnhance: Boolean? = null,
+        colorEnhanceStrength: Float? = null,
+        colorEnhanceSkinProtect: Float? = null,
+
         lowLightEnhance: Boolean? = null,
+        lowLightEnhanceMode: LowLightEnhanceMode? = null,
+        lowLightEnhanceLevel: LowLightEnhanceLevel? = null,
+
         videoDenoiser: Boolean? = null,
+        videoDenoiserMode: VideoDenoiserMode? = null,
+        videoDenoiserLevel: VideoDenoiserLevel? = null,
+
         PVC: Boolean? = null,
+        bFrame: Boolean? = null,
+        exposureface: Boolean? = null,
+
         captureResolution: Resolution? = null,
         encoderResolution: Resolution? = null,
         frameRate: FrameRate? = null,
@@ -329,15 +402,30 @@ object VideoSetting {
 
         inEarMonitoring: Boolean? = null,
         recordingSignalVolume: Int? = null,
-        audioMixingVolume: Int? = null
+        audioMixingVolume: Int? = null,
+
+        params: String? = null,
     ) {
         currBroadcastSetting = BroadcastSetting(
             BroadcastSetting.Video(
                 h265 ?: currBroadcastSetting.video.H265,
                 colorEnhance ?: currBroadcastSetting.video.colorEnhance,
+                colorEnhanceStrength ?: currBroadcastSetting.video.colorEnhanceStrength,
+                colorEnhanceSkinProtect ?: currBroadcastSetting.video.colorEnhanceSkinProtect,
+
                 lowLightEnhance ?: currBroadcastSetting.video.lowLightEnhance,
+                lowLightEnhanceMode?: currBroadcastSetting.video.lowLightEnhanceMode,
+                lowLightEnhanceLevel?: currBroadcastSetting.video.lowLightEnhanceLevel,
+
+
                 videoDenoiser ?: currBroadcastSetting.video.videoDenoiser,
+                videoDenoiserMode ?: currBroadcastSetting.video.videoDenoiserMode,
+                videoDenoiserLevel ?: currBroadcastSetting.video.videoDenoiserLevel,
+
                 PVC ?: currBroadcastSetting.video.PVC,
+                bFrame?: currBroadcastSetting.video.bFrame,
+                exposureface?: currBroadcastSetting.video.exposureface,
+
                 captureResolution ?: currBroadcastSetting.video.captureResolution,
                 encoderResolution ?: currBroadcastSetting.video.encodeResolution,
                 frameRate ?: currBroadcastSetting.video.frameRate,
@@ -347,23 +435,44 @@ object VideoSetting {
                 inEarMonitoring ?: currBroadcastSetting.audio.inEarMonitoring,
                 recordingSignalVolume ?: currBroadcastSetting.audio.recordingSignalVolume,
                 audioMixingVolume ?: currBroadcastSetting.audio.audioMixingVolume
-            )
+            ),
+            params ?: currBroadcastSetting.params
         )
 
         updateRTCBroadcastSetting(
             isJoinedRoom,
-            h265,
-            colorEnhance,
-            lowLightEnhance,
-            videoDenoiser,
-            PVC,
-            captureResolution,
-            encoderResolution,
-            frameRate,
-            bitRate,
-            inEarMonitoring,
-            recordingSignalVolume,
-            audioMixingVolume
+
+            h265 = h265,
+            colorEnhance =
+            if (colorEnhanceStrength != null || colorEnhanceSkinProtect != null)
+                colorEnhance ?: currBroadcastSetting.video.colorEnhance else colorEnhance,
+            colorEnhanceStrength = colorEnhanceStrength,
+            colorEnhanceSkinProtect = colorEnhanceSkinProtect,
+
+            lowLightEnhance =
+            if (lowLightEnhanceMode != null || lowLightEnhanceLevel != null)
+                lowLightEnhance ?: currBroadcastSetting.video.lowLightEnhance else lowLightEnhance,
+            lowLightEnhanceMode = lowLightEnhanceMode,
+            lowLightEnhanceLevel = lowLightEnhanceLevel,
+
+            videoDenoiser =
+            if (videoDenoiserMode != null || videoDenoiserLevel != null)
+                videoDenoiser ?: currBroadcastSetting.video.videoDenoiser else videoDenoiser,
+            videoDenoiserMode = videoDenoiserMode,
+            videoDenoiserLevel = videoDenoiserLevel,
+
+            PVC = PVC,
+            bFrame = bFrame,
+            exposureface = exposureface,
+            captureResolution = captureResolution,
+            encoderResolution = encoderResolution,
+            frameRate = frameRate,
+            bitRate = bitRate,
+            inEarMonitoring = inEarMonitoring,
+            recordingSignalVolume = recordingSignalVolume,
+            audioMixingVolume = audioMixingVolume,
+
+            params = params
         )
 
     }
@@ -380,7 +489,8 @@ object VideoSetting {
 
     private fun updateRTCAudioSetting(
         isJoinedRoom: Boolean,
-        SR: SuperResolution? = null
+        SR: SuperResolution? = null,
+        params: String? = null
     ) {
         val rtcEngine = RtcEngineInstance.rtcEngine
         SR?.let {
@@ -403,6 +513,11 @@ object VideoSetting {
                 }
             }
         }
+        params?.let {
+            it.split(",").forEach { param ->
+                rtcEngine.setParameters(param)
+            }
+        }
     }
 
 
@@ -411,9 +526,21 @@ object VideoSetting {
 
         h265: Boolean? = null,
         colorEnhance: Boolean? = null,
+        colorEnhanceStrength: Float? = null,
+        colorEnhanceSkinProtect: Float? = null,
+
         lowLightEnhance: Boolean? = null,
+        lowLightEnhanceMode: LowLightEnhanceMode? = null,
+        lowLightEnhanceLevel: LowLightEnhanceLevel? = null,
+
         videoDenoiser: Boolean? = null,
+        videoDenoiserMode: VideoDenoiserMode? = null,
+        videoDenoiserLevel: VideoDenoiserLevel? = null,
+
         PVC: Boolean? = null,
+        bFrame: Boolean? = null,
+        exposureface: Boolean? = null,
+
         captureResolution: Resolution? = null,
         encoderResolution: Resolution? = null,
         frameRate: FrameRate? = null,
@@ -421,10 +548,16 @@ object VideoSetting {
 
         inEarMonitoring: Boolean? = null,
         recordingSignalVolume: Int? = null,
-        audioMixingVolume: Int? = null
+        audioMixingVolume: Int? = null,
+
+        params: String? = null
     ) {
         val rtcEngine = RtcEngineInstance.rtcEngine
         val videoEncoderConfiguration = RtcEngineInstance.videoEncoderConfiguration
+        val colorEnhanceOptions = RtcEngineInstance.colorEnhanceOptions
+        val lowLightEnhanceOptions = RtcEngineInstance.lowLightEnhanceOptions
+        val videoDenoiserOptions = RtcEngineInstance.videoDenoiserOptions
+
         h265?.let {
             if (!isJoinedRoom) {
                 // 只能在加入房间前设置，否则rtc sdk会崩溃
@@ -433,17 +566,50 @@ object VideoSetting {
             }
         }
         colorEnhance?.let {
-            rtcEngine.setColorEnhanceOptions(it, ColorEnhanceOptions())
+            colorEnhanceStrength?.let {
+                colorEnhanceOptions.strengthLevel = it
+            }
+            colorEnhanceSkinProtect?.let {
+                colorEnhanceOptions.skinProtectLevel = it
+            }
+            rtcEngine.setColorEnhanceOptions(colorEnhance, colorEnhanceOptions)
         }
+
         lowLightEnhance?.let {
-            rtcEngine.setLowlightEnhanceOptions(it, LowLightEnhanceOptions())
+            lowLightEnhanceMode?.let {
+                lowLightEnhanceOptions.lowlightEnhanceMode = it.value
+            }
+            lowLightEnhanceLevel?.let {
+                lowLightEnhanceOptions.lowlightEnhanceLevel = it.value
+            }
+            rtcEngine.setLowlightEnhanceOptions(lowLightEnhance, lowLightEnhanceOptions)
         }
+
+
         videoDenoiser?.let {
-            rtcEngine.setVideoDenoiserOptions(it, VideoDenoiserOptions())
+            videoDenoiserMode?.let {
+                videoDenoiserOptions.denoiserMode = it.value
+            }
+            videoDenoiserLevel?.let {
+                videoDenoiserOptions.denoiserLevel = it.value
+            }
+            rtcEngine.setVideoDenoiserOptions(videoDenoiser, videoDenoiserOptions)
         }
+
+
+
         PVC?.let {
             // RTC 4.0.0.9版本 不支持，强行设置rtc sdk会崩溃
-            // rtcEngine.setParameters("{\"rtc.video.enable_pvc\":${it}}")
+            // RTC 4.1.1 版本支持
+            rtcEngine.setParameters("{\"rtc.video.enable_pvc\":${it}}")
+        }
+        bFrame?.let {
+            videoEncoderConfiguration.advanceOptions.compressionPreference =
+                if (it) VideoEncoderConfiguration.COMPRESSION_PREFERENCE.PREFER_QUALITY else VideoEncoderConfiguration.COMPRESSION_PREFERENCE.PREFER_LOW_LATENCY
+            rtcEngine.setVideoEncoderConfiguration(videoEncoderConfiguration)
+        }
+        exposureface?.let {
+            rtcEngine.setCameraAutoFocusFaceModeEnabled(it)
         }
         captureResolution?.let {
             rtcEngine.setCameraCapturerConfiguration(CameraCapturerConfiguration(
@@ -474,6 +640,12 @@ object VideoSetting {
         }
         audioMixingVolume?.let {
             rtcEngine.adjustAudioMixingVolume(it)
+        }
+
+        params?.let {
+            it.split(",").forEach { param ->
+                rtcEngine.setParameters(param)
+            }
         }
     }
 

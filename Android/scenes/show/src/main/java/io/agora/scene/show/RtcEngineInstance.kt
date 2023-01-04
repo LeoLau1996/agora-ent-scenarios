@@ -4,6 +4,9 @@ import io.agora.rtc2.IRtcEngineEventHandler
 import io.agora.rtc2.RtcEngine
 import io.agora.rtc2.RtcEngineConfig
 import io.agora.rtc2.RtcEngineEx
+import io.agora.rtc2.video.ColorEnhanceOptions
+import io.agora.rtc2.video.LowLightEnhanceOptions
+import io.agora.rtc2.video.VideoDenoiserOptions
 import io.agora.rtc2.video.VideoEncoderConfiguration
 import io.agora.scene.base.component.AgoraApplication
 import io.agora.scene.base.utils.ToastUtils
@@ -13,6 +16,9 @@ import io.agora.scene.show.beauty.bytedance.BeautyByteDanceImpl
 object RtcEngineInstance {
 
     val videoEncoderConfiguration = VideoEncoderConfiguration()
+    val colorEnhanceOptions = ColorEnhanceOptions()
+    val lowLightEnhanceOptions = LowLightEnhanceOptions()
+    val videoDenoiserOptions = VideoDenoiserOptions()
 
     private var innerBeautyProcessor: IBeautyProcessor? = null
     val beautyProcessor: IBeautyProcessor
