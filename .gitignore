@@ -8,3 +8,6 @@ Pods
 KeyCenter.swift
 **/ByteEffectLib/*
 iOS/libs/**.xcframework/**
+**/libs/*
+**/buglyqq-upload-symbol/**
+**/build.sh

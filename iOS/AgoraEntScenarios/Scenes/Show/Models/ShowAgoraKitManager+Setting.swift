@@ -35,6 +35,9 @@ extension ShowAgoraKitManager {
         // 默认音量设置
         ShowSettingKey.recordingSignalVolume.writeValue(80)
         ShowSettingKey.musincVolume.writeValue(30)
+//        agoraKit.enableExtension(withVendor: <#T##String#>, extension: <#T##String#>, enabled: <#T##Bool#>)
+//        agoraKit.enableExtension("agora_video_filters_super_resolution", "super_resolution")
+        ShowSettingKey.SR.writeValue(false) // 默认关闭sr
         let hasOpened = UserDefaults.standard.bool(forKey: hasOpenedKey)
         // 第一次进入房间的时候设置
         if hasOpened == false {
@@ -94,8 +97,15 @@ extension ShowAgoraKitManager {
     }
     
     /// 设置观众端画质增强
-    private func _setQualityEnable(_ isOn: Bool, srType: ShowSRType? = nil){
+    private func _setQualityEnable(_ isOn: Bool, srType: ShowSRType? = nil, uid: UInt?){
+        //TODO: without library
+        #if false
+        if let uid = uid {
+            agoraKit.enableRemoteSuperResolution(uid, enable: isOn)
+        }
+        #endif
         ShowSettingKey.SR.writeValue(isOn)
+        
         agoraKit.setParameters("{\"rtc.video.enable_sr\":{\"enabled\":\(isOn), \"mode\": 2}}")
         if let xValue = srType?.xValue {
             agoraKit.setParameters("{\"rtc.video.sr_type\":\(xValue)}")
@@ -113,7 +123,7 @@ extension ShowAgoraKitManager {
         }
     }
     
-    func updatePresetForType(_ type: ShowPresetType, mode: ShowMode) {
+    func updatePresetForType(_ type: ShowPresetType, mode: ShowMode,uid: UInt? = nil) {
         switch type {
         case .show_low:
             switch mode {
@@ -144,18 +154,18 @@ extension ShowAgoraKitManager {
             break
             
         case .quality_low:
-            _setQualityEnable(false)
+            _setQualityEnable(false,uid: uid)
             break
         case .quality_medium:
-            _setQualityEnable(true, srType: ShowSRType.x1_5)
+            _setQualityEnable(true, srType: ShowSRType.x1_5, uid: uid)
         case .quality_high:
-            _setQualityEnable(true, srType: ShowSRType.x2)
+            _setQualityEnable(true, srType: ShowSRType.x2, uid: uid)
         case .base_low:
-            _setQualityEnable(false)
+            _setQualityEnable(false,uid: uid)
         case .base_medium:
-            _setQualityEnable(false)
+            _setQualityEnable(false,uid: uid)
         case .base_high:
-            _setQualityEnable(false)
+            _setQualityEnable(false,uid: uid)
         }
     }
     

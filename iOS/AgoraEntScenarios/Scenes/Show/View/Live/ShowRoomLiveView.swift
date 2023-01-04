@@ -7,10 +7,9 @@
 
 import UIKit
 
-protocol ShowRoomLiveViewDelegate: ShowRoomBottomBarDelegate {
+protocol ShowRoomLiveViewDelegate: ShowRoomBottomBarDelegate, ShowCanvasViewDelegate {
     func onClickSendMsgButton(text: String)
     func onClickCloseButton()
-    func onClickRemoteCanvas()
 }
 
 class ShowRoomLiveView: UIView {
@@ -22,7 +21,7 @@ class ShowRoomLiveView: UIView {
     
     var room: ShowRoomListModel? {
         didSet{
-            roomInfoView.setRoomInfo(avatar: room?.ownerAvater, name: room?.roomName, id: room?.roomId, time: room?.createdAt)
+            roomInfoView.setRoomInfo(avatar: room?.ownerAvatar, name: room?.roomName, id: room?.roomId, time: room?.createdAt)
             guard let count = room?.roomUserCount else {
                 roomUserCount = 1
                 return
@@ -34,13 +33,11 @@ class ShowRoomLiveView: UIView {
     weak var delegate: ShowRoomLiveViewDelegate? {
         didSet{
             bottomBar.delegate = delegate
+            canvasView.delegate = delegate
         }
     }
     lazy var canvasView: ShowCanvasView = {
         let view = ShowCanvasView()
-        view.onTapRemoteCanvasClosure = { [weak self] in
-            self?.delegate?.onClickRemoteCanvas()
-        }
         return view
     }()
     
