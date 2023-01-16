@@ -120,7 +120,7 @@ object VideoSetting {
                 lowLightEnhance = false,
                 videoDenoiser = false,
                 PVC = false,
-                captureResolution = Resolution.V_540P,
+                captureResolution = Resolution.V_1080P,
                 encodeResolution = Resolution.V_540P,
                 frameRate = FrameRate.FPS_24,
                 bitRate = 1462
