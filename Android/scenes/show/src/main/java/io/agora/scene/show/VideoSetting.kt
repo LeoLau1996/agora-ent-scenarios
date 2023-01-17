@@ -96,6 +96,7 @@ object VideoSetting {
             val videoDenoiser: Boolean, // 视频降噪
             val PVC: Boolean, // 码率节省
             val captureResolution: Resolution, // 采集分辨率
+            val captureFrameRate: FrameRate, // 采集帧率
             val encodeResolution: Resolution, // 编码分辨率
             val frameRate: FrameRate, // 帧率
             val bitRate: Int // 码率
@@ -121,9 +122,10 @@ object VideoSetting {
                 videoDenoiser = false,
                 PVC = false,
                 captureResolution = Resolution.V_1080P,
+                captureFrameRate = FrameRate.FPS_24,
                 encodeResolution = Resolution.V_540P,
                 frameRate = FrameRate.FPS_24,
-                bitRate = 1462
+                bitRate = 1461
             ),
             BroadcastSetting.Audio(false, 80, 30)
         )
@@ -136,6 +138,7 @@ object VideoSetting {
                 videoDenoiser = false,
                 PVC = false,
                 captureResolution = Resolution.V_720P,
+                captureFrameRate = FrameRate.FPS_24,
                 encodeResolution = Resolution.V_720P,
                 frameRate = FrameRate.FPS_24,
                 bitRate = 2099
@@ -151,6 +154,7 @@ object VideoSetting {
                 videoDenoiser = false,
                 PVC = false,
                 captureResolution = Resolution.V_720P,
+                captureFrameRate = FrameRate.FPS_24,
                 encodeResolution = Resolution.V_720P,
                 frameRate = FrameRate.FPS_24,
                 bitRate = 2099
@@ -166,6 +170,7 @@ object VideoSetting {
                 videoDenoiser = false,
                 PVC = false,
                 captureResolution = Resolution.V_720P,
+                captureFrameRate = FrameRate.FPS_15,
                 encodeResolution = Resolution.V_360P,
                 frameRate = FrameRate.FPS_15,
                 bitRate = 680
@@ -181,6 +186,7 @@ object VideoSetting {
                 videoDenoiser = false,
                 PVC = false,
                 captureResolution = Resolution.V_720P,
+                captureFrameRate = FrameRate.FPS_15,
                 encodeResolution = Resolution.V_360P,
                 frameRate = FrameRate.FPS_15,
                 bitRate = 680
@@ -196,6 +202,7 @@ object VideoSetting {
                 videoDenoiser = false,
                 PVC = false,
                 captureResolution = Resolution.V_720P,
+                captureFrameRate = FrameRate.FPS_15,
                 encodeResolution = Resolution.V_360P,
                 frameRate = FrameRate.FPS_15,
                 bitRate = 680
@@ -304,6 +311,7 @@ object VideoSetting {
             currBroadcastSetting.video.videoDenoiser,
             currBroadcastSetting.video.PVC,
             currBroadcastSetting.video.captureResolution,
+            currBroadcastSetting.video.captureFrameRate,
             currBroadcastSetting.video.encodeResolution,
             currBroadcastSetting.video.frameRate,
             currBroadcastSetting.video.bitRate,
@@ -323,6 +331,7 @@ object VideoSetting {
         videoDenoiser: Boolean? = null,
         PVC: Boolean? = null,
         captureResolution: Resolution? = null,
+        captureFrameRate: FrameRate? = null,
         encoderResolution: Resolution? = null,
         frameRate: FrameRate? = null,
         bitRate: Int? = null,
@@ -339,6 +348,7 @@ object VideoSetting {
                 videoDenoiser ?: currBroadcastSetting.video.videoDenoiser,
                 PVC ?: currBroadcastSetting.video.PVC,
                 captureResolution ?: currBroadcastSetting.video.captureResolution,
+                captureFrameRate ?: currBroadcastSetting.video.captureFrameRate,
                 encoderResolution ?: currBroadcastSetting.video.encodeResolution,
                 frameRate ?: currBroadcastSetting.video.frameRate,
                 bitRate ?: currBroadcastSetting.video.bitRate
@@ -358,6 +368,7 @@ object VideoSetting {
             videoDenoiser,
             PVC,
             captureResolution,
+            captureFrameRate ?: currBroadcastSetting.video.captureFrameRate,
             encoderResolution,
             frameRate,
             bitRate,
@@ -415,6 +426,7 @@ object VideoSetting {
         videoDenoiser: Boolean? = null,
         PVC: Boolean? = null,
         captureResolution: Resolution? = null,
+        captureFrameRate : FrameRate? = null,
         encoderResolution: Resolution? = null,
         frameRate: FrameRate? = null,
         bitRate: Int? = null,
@@ -460,7 +472,7 @@ object VideoSetting {
         }
         captureResolution?.let {
             rtcEngine.setCameraCapturerConfiguration(CameraCapturerConfiguration(
-                CameraCapturerConfiguration.CaptureFormat(it.width, it.height, 15)
+                CameraCapturerConfiguration.CaptureFormat(it.width, it.height, captureFrameRate?.fps ?: 24)
             ).apply {
                 followEncodeDimensionRatio = false
             })
