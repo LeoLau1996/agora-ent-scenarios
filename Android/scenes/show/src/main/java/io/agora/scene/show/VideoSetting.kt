@@ -391,7 +391,7 @@ object VideoSetting {
                 rtcEngine.setParameters("{\"rtc.video.enable_sr\":{\"enabled\":${open}, \"mode\": 2}}")
                 if(open){
                     // 设置最大分辨率
-                    rtcEngine.setParameters("{\"rtc.video.sr_max_wh\":921600")
+                    rtcEngine.setParameters("{\"rtc.video.sr_max_wh\":921600}")
                     //超分倍数选项
                     //1倍：     n=6
                     //1.33倍:  n=7
@@ -399,7 +399,7 @@ object VideoSetting {
                     //2倍：     n=3
                     //锐化：    n=10(android是10，iOS是11)
                     val n = SR.value
-                    rtcEngine.setParameters("{\"rtc.video.sr_type\":${n}")
+                    rtcEngine.setParameters("{\"rtc.video.sr_type\":${n}}")
                 }
             }
         }
@@ -445,13 +445,6 @@ object VideoSetting {
             // RTC 4.0.0.9版本 不支持，强行设置rtc sdk会崩溃
             // rtcEngine.setParameters("{\"rtc.video.enable_pvc\":${it}}")
         }
-        captureResolution?.let {
-            rtcEngine.setCameraCapturerConfiguration(CameraCapturerConfiguration(
-                CameraCapturerConfiguration.CaptureFormat(it.width, it.height, 15)
-            ).apply {
-                followEncodeDimensionRatio = false
-            })
-        }
         encoderResolution?.let {
             videoEncoderConfiguration.dimensions =
                 VideoEncoderConfiguration.VideoDimensions(it.width, it.height)
@@ -464,6 +457,13 @@ object VideoSetting {
         bitRate?.let {
             videoEncoderConfiguration.bitrate = it
             rtcEngine.setVideoEncoderConfiguration(videoEncoderConfiguration)
+        }
+        captureResolution?.let {
+            rtcEngine.setCameraCapturerConfiguration(CameraCapturerConfiguration(
+                CameraCapturerConfiguration.CaptureFormat(it.width, it.height, 15)
+            ).apply {
+                followEncodeDimensionRatio = false
+            })
         }
 
         inEarMonitoring?.let {
