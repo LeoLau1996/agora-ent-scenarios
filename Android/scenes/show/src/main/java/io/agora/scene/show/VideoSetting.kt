@@ -137,11 +137,11 @@ object VideoSetting {
                 lowLightEnhance = false,
                 videoDenoiser = false,
                 PVC = false,
-                captureResolution = Resolution.V_720P,
+                captureResolution = Resolution.V_1080P,
                 captureFrameRate = FrameRate.FPS_24,
-                encodeResolution = Resolution.V_720P,
+                encodeResolution = Resolution.V_540P,
                 frameRate = FrameRate.FPS_24,
-                bitRate = 2099
+                bitRate = 1461
             ),
             BroadcastSetting.Audio(false, 80, 30)
         )
