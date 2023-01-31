@@ -10,11 +10,9 @@ import android.os.CountDownTimer
 import android.text.SpannableStringBuilder
 import android.text.style.ForegroundColorSpan
 import android.util.Log
-import android.view.LayoutInflater
-import android.view.SurfaceView
-import android.view.TextureView
+import android.view.*
+import android.view.View.OnTouchListener
 import android.view.ViewGroup.MarginLayoutParams
-import android.view.WindowManager
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
@@ -532,6 +530,7 @@ class LiveDetailActivity : AppCompatActivity() {
             setOnItemActivateChangedListener { _, itemId, activated ->
                 when (itemId) {
                     SettingDialog.ITEM_ID_CAMERA -> mRtcEngine.switchCamera()
+                    SettingDialog.ITEM_ID_CAMERA_AUTO_FOCUS -> mRtcEngine.setCameraAutoFocusFaceModeEnabled(activated)
                     SettingDialog.ITEM_ID_QUALITY -> showPictureQualityDialog(this)
                     SettingDialog.ITEM_ID_VIDEO -> mRtcEngine.enableLocalVideo(activated)
                     SettingDialog.ITEM_ID_MIC -> {
@@ -1242,6 +1241,14 @@ class LiveDetailActivity : AppCompatActivity() {
         val videoView = SurfaceView(this)
         mBinding.videoSinglehostLayout.videoContainer.addView(videoView)
         if (isRoomOwner) {
+            videoView.setOnTouchListener(object: OnTouchListener{
+                override fun onTouch(v: View?, event: MotionEvent?): Boolean {
+                    event?: return false
+                    mRtcEngine.setCameraFocusPositionInPreview(event.x, event.y)
+                    mRtcEngine.setCameraExposurePosition(event.x, event.y)
+                    return false
+                }
+            })
             mRtcEngine.setupLocalVideo(VideoCanvas(videoView))
             mRtcEngine.startPreview()
         } else {

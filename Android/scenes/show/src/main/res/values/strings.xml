@@ -195,4 +195,6 @@
     <string name="show_beauty_item_beauty_bright_eye">亮眼</string>
     <string name="show_beauty_item_beauty_remove_dark_circles">祛黑眼圈</string>
     <string name="show_beauty_item_beauty_remove_nasolabial_folds">祛法令纹</string>
+    <string name="show_setting_camera_auto_focus_close">自动聚焦关</string>
+    <string name="show_setting_camera_auto_focus_open">自动聚焦开</string>
 </resources>

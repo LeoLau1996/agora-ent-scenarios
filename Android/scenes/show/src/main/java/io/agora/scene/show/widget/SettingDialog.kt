@@ -8,7 +8,6 @@ import androidx.annotation.StringRes
 import io.agora.scene.show.R
 import io.agora.scene.show.databinding.ShowWidgetSettingDialogBinding
 import io.agora.scene.show.databinding.ShowWidgetSettingDialogItemBinding
-import io.agora.scene.show.widget.link.LiveLinkAudienceSettingsDialog
 import io.agora.scene.widget.basic.BindingSingleAdapter
 import io.agora.scene.widget.basic.BindingViewHolder
 
@@ -22,6 +21,7 @@ class SettingDialog(context: Context) : BottomDarkDialog(context) {
         const val ITEM_ID_STATISTIC = 4
         const val ITEM_ID_QUALITY = 5
         const val ITEM_ID_SETTING = 6
+        const val ITEM_ID_CAMERA_AUTO_FOCUS = 7
 
         @IntDef(
             ITEM_ID_CAMERA,
@@ -29,7 +29,8 @@ class SettingDialog(context: Context) : BottomDarkDialog(context) {
             ITEM_ID_MIC,
             ITEM_ID_STATISTIC,
             ITEM_ID_QUALITY,
-            ITEM_ID_SETTING
+            ITEM_ID_SETTING,
+            ITEM_ID_CAMERA_AUTO_FOCUS,
         )
         @Retention(AnnotationRetention.RUNTIME)
         @Target(
@@ -76,6 +77,13 @@ class SettingDialog(context: Context) : BottomDarkDialog(context) {
             R.mipmap.show_setting_ic_camera,
             R.string.show_setting_switch_camera,
             R.string.show_setting_switch_camera
+        ),
+        SettingItem(
+            ITEM_ID_CAMERA_AUTO_FOCUS,
+            R.mipmap.show_setting_ic_camera,
+            R.mipmap.show_setting_ic_camera,
+            R.string.show_setting_camera_auto_focus_close,
+            R.string.show_setting_camera_auto_focus_open
         ),
         SettingItem(
             ITEM_ID_VIDEO,
