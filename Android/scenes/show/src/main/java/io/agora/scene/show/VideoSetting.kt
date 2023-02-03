@@ -121,10 +121,10 @@ object VideoSetting {
                 lowLightEnhance = false,
                 videoDenoiser = false,
                 PVC = false,
-                captureResolution = Resolution.V_1080P,
-                captureFrameRate = FrameRate.FPS_24,
+                captureResolution = Resolution.V_720P,
+                captureFrameRate = FrameRate.FPS_15,
                 encodeResolution = Resolution.V_540P,
-                frameRate = FrameRate.FPS_24,
+                frameRate = FrameRate.FPS_15,
                 bitRate = 1461
             ),
             BroadcastSetting.Audio(false, 80, 30)
@@ -137,10 +137,10 @@ object VideoSetting {
                 lowLightEnhance = false,
                 videoDenoiser = false,
                 PVC = false,
-                captureResolution = Resolution.V_1080P,
-                captureFrameRate = FrameRate.FPS_24,
+                captureResolution = Resolution.V_720P,
+                captureFrameRate = FrameRate.FPS_15,
                 encodeResolution = Resolution.V_540P,
-                frameRate = FrameRate.FPS_24,
+                frameRate = FrameRate.FPS_15,
                 bitRate = 1461
             ),
             BroadcastSetting.Audio(false, 80, 30)

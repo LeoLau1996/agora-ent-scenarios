@@ -1244,8 +1244,8 @@ class LiveDetailActivity : AppCompatActivity() {
             videoView.setOnTouchListener(object: OnTouchListener{
                 override fun onTouch(v: View?, event: MotionEvent?): Boolean {
                     event?: return false
-                    mRtcEngine.setCameraFocusPositionInPreview(event.x, event.y)
-                    mRtcEngine.setCameraExposurePosition(event.x, event.y)
+                    // mRtcEngine.setCameraFocusPositionInPreview(event.x, event.y)
+                    // mRtcEngine.setCameraExposurePosition(event.x, event.y)
                     return false
                 }
             })

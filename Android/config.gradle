@@ -48,7 +48,7 @@ ext {
             rtc               : 'io.agora.rtc:agora-special-full:4.0.1.4',
             rtc_special_voice : 'io.agora.rtc:agora-special-voice:4.0.1.4',
             rtc_screen_sharing: 'io.agora.rtc:full-screen-sharing:4.0.1.4',
-            rtm               : 'com.github.agorabuilder:rtm-sdk:1.4.10',
+//            rtm               : 'com.github.agorabuilder:rtm-sdk:1.4.10',
             syncManager       : 'com.github.AgoraIO-Community:SyncManager-Android:2.1.4',
             lyricsView        : 'com.github.AgoraIO-Community:LyricsView:1.0.10',
 
@@ -62,7 +62,7 @@ ext {
 
             // rtc && im
 //            agora_rtc          : 'io.agora.rtc:full-sdk:4.0.1',
-            agora_im           : 'io.agora.rtm:rtm-sdk:1.5.0',
+//            agora_im           : 'io.agora.rtm:rtm-sdk:1.5.0',
             bugly              : 'com.tencent.bugly:crashreport:4.0.4',
             svga_player        : 'com.github.yyued:SVGAPlayer-Android:2.6.1',
     ]
