@@ -1,5 +1,7 @@
 package io.agora.scene.show
 
+import android.os.Build
+import android.util.Log
 import io.agora.rtc2.IRtcEngineEventHandler
 import io.agora.rtc2.RtcEngine
 import io.agora.rtc2.RtcEngineConfig
@@ -9,6 +11,7 @@ import io.agora.scene.base.component.AgoraApplication
 import io.agora.scene.base.utils.ToastUtils
 import io.agora.scene.show.beauty.IBeautyProcessor
 import io.agora.scene.show.beauty.sensetime.BeautySenseTimeImpl
+import java.text.SimpleDateFormat
 
 object RtcEngineInstance {
 
@@ -41,6 +44,10 @@ object RtcEngineInstance {
                 innerRtcEngine = (RtcEngine.create(config) as RtcEngineEx).apply {
                     registerVideoFrameObserver(beautyProcessor)
                     enableVideo()
+                    Log.d("RtcEngineInstance", "Model:" + Build.MODEL + ", Time:" + SimpleDateFormat("yyyy:MM:dd").format(Build.TIME))
+                    if(Build.MODEL.equals("MI 8", true)){
+                        setParameters("{\"che.video.android_camera_select\":0}")
+                    }
                 }
             }
             return innerRtcEngine!!
