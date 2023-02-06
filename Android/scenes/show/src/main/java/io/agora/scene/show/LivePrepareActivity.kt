@@ -19,6 +19,7 @@ import io.agora.scene.show.service.ShowRoomDetailModel
 import io.agora.scene.show.service.ShowServiceProtocol
 import io.agora.scene.show.utils.PermissionHelp
 import io.agora.scene.show.widget.BeautyDialog
+import io.agora.scene.show.widget.DebugSettingDialog
 import io.agora.scene.show.widget.PictureQualityDialog
 import io.agora.scene.show.widget.PresetDialog
 import io.agora.scene.widget.utils.StatusBarUtil
@@ -74,6 +75,10 @@ class LivePrepareActivity : ComponentActivity() {
         }
         mBinding.tvSetting.setOnClickListener {
             showPresetDialog()
+        }
+        mBinding.tvSetting.setOnLongClickListener {
+            DebugSettingDialog(this).show()
+            return@setOnLongClickListener false
         }
 
         checkRequirePerms {

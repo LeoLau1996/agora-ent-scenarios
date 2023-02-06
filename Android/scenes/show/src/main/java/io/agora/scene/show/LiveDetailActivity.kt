@@ -185,6 +185,10 @@ class LiveDetailActivity : AppCompatActivity() {
                 showSettingDialog()
             }
         }
+        bottomLayout.ivSetting.setOnLongClickListener {
+            DebugSettingDialog(this).show()
+            return@setOnLongClickListener false
+        }
         bottomLayout.ivBeauty.setOnClickListener{
             showBeautyDialog()
         }
