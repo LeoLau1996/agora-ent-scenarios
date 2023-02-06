@@ -5,7 +5,6 @@ import android.view.LayoutInflater
 import android.view.inputmethod.EditorInfo
 import io.agora.scene.base.utils.ToastUtils
 import io.agora.scene.show.RtcEngineInstance
-import io.agora.scene.show.databinding.ShowSettingAdvanceDialogBinding
 import io.agora.scene.show.databinding.ShowWidgetDebugSettingDialogBinding
 
 class DebugSettingDialog(context: Context) : BottomFullDialog(context) {
@@ -24,7 +23,37 @@ class DebugSettingDialog(context: Context) : BottomFullDialog(context) {
         mBinding.ivBack.setOnClickListener {
             dismiss()
         }
+        // 采集帧率
+        mBinding.etFpsCapture.setText(RtcEngineInstance.videoCaptureConfiguration.captureFormat.fps.toString())
+        mBinding.etFpsCapture.setOnEditorActionListener { v, actionId, event ->
+            if (actionId == EditorInfo.IME_ACTION_DONE) {
+                RtcEngineInstance.videoCaptureConfiguration.captureFormat.fps = mBinding.etFpsCapture.text.toString().toIntOrNull()?: 30
+                RtcEngineInstance.rtcEngine.setCameraCapturerConfiguration(RtcEngineInstance.videoCaptureConfiguration)
+                v.clearFocus()
+                ToastUtils.showToast("设置成功")
+            }
+            return@setOnEditorActionListener false
+        }
 
+        // 采集分辨率
+        mBinding.etResolutionWidthCapture.setText(RtcEngineInstance.videoCaptureConfiguration.captureFormat.width.toString())
+        mBinding.etResolutionHeightCapture.setText(RtcEngineInstance.videoCaptureConfiguration.captureFormat.height.toString())
+        mBinding.etResolutionWidthCapture.setOnEditorActionListener { v, actionId, event ->
+            if(actionId == EditorInfo.IME_ACTION_NEXT){
+                mBinding.etResolutionHeightCapture.requestFocus()
+            }
+            return@setOnEditorActionListener false
+        }
+        mBinding.etResolutionHeightCapture.setOnEditorActionListener { v, actionId, event ->
+            if(actionId == EditorInfo.IME_ACTION_DONE){
+                RtcEngineInstance.videoCaptureConfiguration.captureFormat.width = mBinding.etResolutionWidthCapture.text.toString().toIntOrNull()?: 720
+                RtcEngineInstance.videoCaptureConfiguration.captureFormat.height = mBinding.etResolutionHeightCapture.text.toString().toIntOrNull()?: 1080
+                RtcEngineInstance.rtcEngine.setCameraCapturerConfiguration(RtcEngineInstance.videoCaptureConfiguration)
+                ToastUtils.showToast("设置成功")
+                v.clearFocus()
+            }
+            return@setOnEditorActionListener false
+        }
 
         // 帧率
         mBinding.etFps.setText(RtcEngineInstance.videoEncoderConfiguration.frameRate.toString())
@@ -50,7 +79,7 @@ class DebugSettingDialog(context: Context) : BottomFullDialog(context) {
         mBinding.etResolutionHeight.setOnEditorActionListener { v, actionId, event ->
             if(actionId == EditorInfo.IME_ACTION_DONE){
                 RtcEngineInstance.videoEncoderConfiguration.dimensions.width = mBinding.etResolutionWidth.text.toString().toIntOrNull()?: 720
-                RtcEngineInstance.videoEncoderConfiguration.dimensions.height = mBinding.etResolutionWidth.text.toString().toIntOrNull()?: 1080
+                RtcEngineInstance.videoEncoderConfiguration.dimensions.height = mBinding.etResolutionHeight.text.toString().toIntOrNull()?: 1080
                 RtcEngineInstance.rtcEngine.setVideoEncoderConfiguration(RtcEngineInstance.videoEncoderConfiguration)
                 ToastUtils.showToast("设置成功")
                 v.clearFocus()

@@ -1,6 +1,9 @@
 package io.agora.scene.show
 
-import io.agora.rtc2.video.*
+import io.agora.rtc2.video.ColorEnhanceOptions
+import io.agora.rtc2.video.LowLightEnhanceOptions
+import io.agora.rtc2.video.VideoDenoiserOptions
+import io.agora.rtc2.video.VideoEncoderConfiguration
 
 object VideoSetting {
 
@@ -437,6 +440,7 @@ object VideoSetting {
     ) {
         val rtcEngine = RtcEngineInstance.rtcEngine
         val videoEncoderConfiguration = RtcEngineInstance.videoEncoderConfiguration
+        val videoCaptureConfiguration = RtcEngineInstance.videoCaptureConfiguration
         h265?.let {
             if (!isJoinedRoom) {
                 // 只能在加入房间前设置，否则rtc sdk会崩溃
@@ -471,11 +475,12 @@ object VideoSetting {
             rtcEngine.setVideoEncoderConfiguration(videoEncoderConfiguration)
         }
         captureResolution?.let {
-            rtcEngine.setCameraCapturerConfiguration(CameraCapturerConfiguration(
-                CameraCapturerConfiguration.CaptureFormat(it.width, it.height, captureFrameRate?.fps ?: 24)
-            ).apply {
-                followEncodeDimensionRatio = false
-            })
+            videoCaptureConfiguration.captureFormat.width = it.width
+            videoCaptureConfiguration.captureFormat.height = it.height
+            captureFrameRate?.fps?.let { _fps->
+                videoCaptureConfiguration.captureFormat.fps = _fps
+            }
+            rtcEngine.setCameraCapturerConfiguration(videoCaptureConfiguration)
         }
 
         inEarMonitoring?.let {

@@ -6,6 +6,7 @@ import io.agora.rtc2.IRtcEngineEventHandler
 import io.agora.rtc2.RtcEngine
 import io.agora.rtc2.RtcEngineConfig
 import io.agora.rtc2.RtcEngineEx
+import io.agora.rtc2.video.CameraCapturerConfiguration
 import io.agora.rtc2.video.VideoEncoderConfiguration
 import io.agora.scene.base.component.AgoraApplication
 import io.agora.scene.base.utils.ToastUtils
@@ -16,6 +17,9 @@ import java.text.SimpleDateFormat
 object RtcEngineInstance {
 
     val videoEncoderConfiguration = VideoEncoderConfiguration()
+    val videoCaptureConfiguration = CameraCapturerConfiguration(CameraCapturerConfiguration.CaptureFormat()).apply {
+        followEncodeDimensionRatio = false
+    }
 
     private var innerBeautyProcessor: IBeautyProcessor? = null
     val beautyProcessor: IBeautyProcessor

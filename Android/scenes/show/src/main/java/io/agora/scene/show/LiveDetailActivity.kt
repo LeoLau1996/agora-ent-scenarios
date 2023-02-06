@@ -1229,7 +1229,6 @@ class LiveDetailActivity : AppCompatActivity() {
                         mService.stopInteraction(interactionInfo)
                     }
                     refreshBottomLayout()
-                    updateVideoSetting()
                     if (interactionInfo != null) {
                         refreshViewDetailLayout(interactionInfo.interactStatus)
                         if (interactionInfo.interactStatus == ShowInteractionStatus.onSeat.value) {
