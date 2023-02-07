@@ -28,6 +28,16 @@
             android:layout_gravity="center"
             android:text="自定义设置"/>
 
+        <TextView
+            android:id="@+id/tvSure"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="16sp"
+            android:textColor="@color/blue_9F"
+            android:layout_gravity="end|center_vertical"
+            android:padding="12dp"
+            android:text="确定"/>
+
     </FrameLayout>
 
     <View
@@ -74,7 +84,7 @@
                     app:layout_constraintTop_toTopOf="parent"
                     android:layout_marginEnd="8dp"
                     android:inputType="numberDecimal"
-                    android:imeOptions="actionDone"
+                    android:imeOptions="actionNext"
                     android:textStyle="bold"
                     tools:text="60" />
 
@@ -153,7 +163,7 @@
                     app:layout_constraintTop_toTopOf="parent"
                     android:inputType="numberDecimal"
                     android:textStyle="bold"
-                    android:imeOptions="actionDone"
+                    android:imeOptions="actionNext"
                     tools:text="1080" />
 
                 <View
@@ -193,7 +203,7 @@
                     app:layout_constraintTop_toTopOf="parent"
                     android:layout_marginEnd="8dp"
                     android:inputType="numberDecimal"
-                    android:imeOptions="actionDone"
+                    android:imeOptions="actionNext"
                     android:textStyle="bold"
                     tools:text="60" />
 
@@ -272,7 +282,7 @@
                     app:layout_constraintTop_toTopOf="parent"
                     android:inputType="numberDecimal"
                     android:textStyle="bold"
-                    android:imeOptions="actionDone"
+                    android:imeOptions="actionNext"
                     tools:text="1080" />
 
                 <View
@@ -312,7 +322,7 @@
                     app:layout_constraintTop_toTopOf="parent"
                     android:layout_marginEnd="8dp"
                     android:inputType="numberDecimal"
-                    android:imeOptions="actionDone"
+                    android:imeOptions="actionNext"
                     android:textStyle="bold"
                     tools:text="6000" />
 
