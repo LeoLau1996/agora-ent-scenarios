@@ -294,11 +294,11 @@ time_t uptime(void) {
 {
     //只在特殊情况(播放等)调用getPosition(会耗时)
     self.localPlayerPosition = uptime() - [self.rtcMediaPlayer getPosition];
-    if ([self.rtcMediaPlayer getPlayerState] == AgoraMediaPlayerStatePaused) {
+//    if ([self.rtcMediaPlayer getPlayerState] == AgoraMediaPlayerStatePaused) {
         [self.rtcMediaPlayer resume];
-    } else {
-        [self.rtcMediaPlayer play];
-    }
+//    } else {
+//        [self.rtcMediaPlayer play];
+//    }
 }
 
 -(void)pausePlay
@@ -429,6 +429,23 @@ time_t uptime(void) {
             [self.delegate controller:self song:self.config.songCode didChangedToState:state local:NO];
         }
         
+        if ([self.rtcMediaPlayer getPlayerState] == AgoraMediaPlayerStateOpenCompleted ) {
+            if (position == 0) {
+                NSInteger localNtpTime = [self getNtpTimeInMs];
+                CGFloat diff = (200.0 - (CGFloat)(localNtpTime  - remoteNtp)) / 1000;
+                KTVLogInfo(@"[self.rtcMediaPlayer play] 1 %f", diff);
+                if (diff > 0) {
+                    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(diff * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+                        [self.rtcMediaPlayer play];
+                        KTVLogInfo(@"[self.rtcMediaPlayer play] 1");
+                    });
+                }
+            } else {
+                KTVLogInfo(@"[self.rtcMediaPlayer play] 2");
+                [self.rtcMediaPlayer play];
+            }
+        }
+        
         self.remotePlayerPosition = position;
         self.remotePlayerDuration = duration;
 //        KTVLogInfo(@"setLrcTime: %ld / %ld", self.remotePlayerPosition, self.remotePlayerDuration);
@@ -530,6 +547,17 @@ time_t uptime(void) {
         self.localPlayerPosition = uptime();
         self.playerDuration = 0;
         if (self.config.role == KTVSingRoleMainSinger) {
+            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.3 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+                NSDictionary *dict = @{
+                    @"cmd":@"setLrcTime",
+                    @"duration":@(self.playerDuration),
+                    @"time":@(0),   //不同机型delay不同，需要发送同步的时候减去发送机型的delay，在接收同步加上接收机型的delay
+                    @"ntp":@([self getNtpTimeInMs]),
+                    @"playerState":@(self.playerState)
+                };
+                
+                [self sendStreamMessageWithDict:dict success:nil];
+            });
             //TODO: 目前不delay直接play会有大概率对不齐的情况，具体delay的时间或者把delay放在回调里的策略需要修改
             dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
                 [playerKit play];
