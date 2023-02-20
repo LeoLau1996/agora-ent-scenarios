@@ -198,6 +198,7 @@
 		DD2A43E228FFCEE7004CEDCF /* AgoraEntScenariosTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD2A43E128FFCEE7004CEDCF /* AgoraEntScenariosTests.swift */; };
 		DD2A43EC28FFCEE7004CEDCF /* AgoraEntScenariosUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD2A43EB28FFCEE7004CEDCF /* AgoraEntScenariosUITests.swift */; };
 		DD2A43EE28FFCEE7004CEDCF /* AgoraEntScenariosUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD2A43ED28FFCEE7004CEDCF /* AgoraEntScenariosUITestsLaunchTests.swift */; };
+		DD3E87B429A38B4D006B3358 /* KTVPlayerApi.m in Sources */ = {isa = PBXBuildFile; fileRef = DD3E87B329A38B4D006B3358 /* KTVPlayerApi.m */; };
 		DD5EBDC3299F201D00F36349 /* KTVDebugManager.m in Sources */ = {isa = PBXBuildFile; fileRef = DD5EBDC2299F201D00F36349 /* KTVDebugManager.m */; };
 		DD5EBDC6299F230100F36349 /* KTVDebugViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = DD5EBDC5299F230100F36349 /* KTVDebugViewController.m */; };
 		DD5EBDC9299F491F00F36349 /* KTVDebugInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = DD5EBDC8299F491F00F36349 /* KTVDebugInfo.m */; };
@@ -587,6 +588,8 @@
 		DD2A43E728FFCEE7004CEDCF /* AgoraEntScenariosUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AgoraEntScenariosUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		DD2A43EB28FFCEE7004CEDCF /* AgoraEntScenariosUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgoraEntScenariosUITests.swift; sourceTree = "<group>"; };
 		DD2A43ED28FFCEE7004CEDCF /* AgoraEntScenariosUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgoraEntScenariosUITestsLaunchTests.swift; sourceTree = "<group>"; };
+		DD3E87B229A38B4D006B3358 /* KTVPlayerApi.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = KTVPlayerApi.h; sourceTree = "<group>"; };
+		DD3E87B329A38B4D006B3358 /* KTVPlayerApi.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = KTVPlayerApi.m; sourceTree = "<group>"; };
 		DD5EBDC1299F201D00F36349 /* KTVDebugManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = KTVDebugManager.h; sourceTree = "<group>"; };
 		DD5EBDC2299F201D00F36349 /* KTVDebugManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = KTVDebugManager.m; sourceTree = "<group>"; };
 		DD5EBDC4299F230100F36349 /* KTVDebugViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = KTVDebugViewController.h; sourceTree = "<group>"; };
@@ -1051,6 +1054,8 @@
 				DD0292BA295BF0DC00485225 /* KTVApi.h */,
 				DD0292BB295BF0DC00485225 /* VLKTVViewController.m */,
 				DD0292BC295BF0DC00485225 /* KTVApi.m */,
+				DD3E87B229A38B4D006B3358 /* KTVPlayerApi.h */,
+				DD3E87B329A38B4D006B3358 /* KTVPlayerApi.m */,
 			);
 			path = KTV;
 			sourceTree = "<group>";
@@ -2302,6 +2307,7 @@
 				DD220B53295B332C00F57F30 /* PopTip.swift in Sources */,
 				DD0292F0295BF0DC00485225 /* VLHomeOnLineListView.m in Sources */,
 				DDA199F328FFE579009D3E61 /* UIColor+Extension.swift in Sources */,
+				DD3E87B429A38B4D006B3358 /* KTVPlayerApi.m in Sources */,
 				DD0292D2295BF0DC00485225 /* VLSearchSongResultView.m in Sources */,
 				DD220B58295B332C00F57F30 /* VoiceRoomEndLiveAlert.swift in Sources */,
 				DD220B7E295B332C00F57F30 /* VMConfirmView.swift in Sources */,
