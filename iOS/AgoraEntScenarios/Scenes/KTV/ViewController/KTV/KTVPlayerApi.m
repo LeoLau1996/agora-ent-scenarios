@@ -62,7 +62,6 @@ time_t uptime(void) {
 
 -(void)dealloc
 {
-    [[AppContext shared] unregisterEventDelegate:self];
     [[AppContext shared] unregisterPlayerEventDelegate:self];
     [self.engine setAudioFrameDelegate:nil];
 }

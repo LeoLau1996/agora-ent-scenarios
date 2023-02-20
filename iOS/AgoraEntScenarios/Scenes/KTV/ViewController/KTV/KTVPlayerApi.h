@@ -65,7 +65,7 @@ AgoraAudioFrameDelegate
 @property(nonatomic, weak)AgoraRtcEngineKit* engine;
 @property(nonatomic, weak)AgoraMusicContentCenter* musicCenter;
 @property(nonatomic, weak)id<AgoraMusicPlayerProtocol> rtcMediaPlayer;
-@property (nonatomic, strong) AgoraRtcConnection* subChorusConnection;
+@property (nonatomic, strong, nullable) AgoraRtcConnection* subChorusConnection;
 @property (atomic, assign) BOOL pushDirectAudioEnable;
 @property (nonatomic, strong) NSString* channelName;
 @property (nonatomic, assign) NSInteger localPlayerPosition;
@@ -73,7 +73,7 @@ AgoraAudioFrameDelegate
 @property (nonatomic, assign) NSInteger remotePlayerDuration;
 @property (nonatomic, assign) NSInteger audioPlayoutDelay;
 @property (nonatomic, assign) NSInteger dataStreamId;
-@property (nonatomic, strong) KTVSongConfiguration* config;
+@property (nonatomic, strong, nullable) KTVSongConfiguration* config;
 
 @property (nonatomic, assign) NSInteger playerDuration;
 
