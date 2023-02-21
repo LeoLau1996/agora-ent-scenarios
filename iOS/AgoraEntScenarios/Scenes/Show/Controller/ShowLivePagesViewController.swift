@@ -26,7 +26,7 @@ class ShowLivePagesViewController: ViewController {
     }()
     
     
-    fileprivate var roomVCMap: [String: ShowLiveViewController] = [:]
+    fileprivate var roomVCCache: Set<ShowLiveViewController> = Set<ShowLiveViewController>()
     
     private lazy var collectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
@@ -47,9 +47,8 @@ class ShowLivePagesViewController: ViewController {
     
     deinit {
         showLogger.info("deinit-- ShowLivePagesViewController")
-        self.roomVCMap.forEach { (key: String, value: ShowLiveViewController) in
-            value.leaveRoom()
-            AppContext.unloadShowServiceImp(key)
+        self.roomVCCache.forEach { vc in
+            vc.loadingType = .idle
         }
     }
     
@@ -65,7 +64,7 @@ class ShowLivePagesViewController: ViewController {
 }
 
 
-private let kPageCacheHalfCount = 5
+private let kPageCacheHalfCount = 500
 //MARK: private
 extension ShowLivePagesViewController {
     fileprivate func preloadEnterRoom() {
@@ -83,7 +82,7 @@ extension ShowLivePagesViewController {
             vc.room = room
             vc.loadingType = .preload
             vc.pagesVC = self
-            self.roomVCMap[roomId] = vc
+//            self.roomVCMap[roomId] = vc
             //TODO: invoke viewdidload to join channel
             vc.view.frame = self.view.bounds
         }
@@ -159,50 +158,79 @@ extension ShowLivePagesViewController: UICollectionViewDelegate, UICollectionVie
                                                                             for: indexPath)
         let idx = realCellIndex(with: indexPath.row)
         defer {
-            showLogger.info("collectionView cellForItemAt: \(idx)/\(indexPath.row)  cache vc count: \(self.roomVCMap.count)")
+            showLogger.info("collectionView cellForItemAt: \(idx)/\(indexPath.row)  cache vc count: \(roomVCCache.count)")
         }
         
-        guard let room = self.roomList?[idx], let roomId = room.roomId else {
+        guard let list = roomList else {
+            showLogger.info("room list is nil")
             return cell
         }
+        let room = list[idx]
+        var origVC = cell.contentView.viewWithTag(kShowLiveRoomViewTag)?.next as? ShowLiveViewController
         
-        let origVC = cell.contentView.viewWithTag(kShowLiveRoomViewTag)?.next as? ShowLiveViewController
-        
-        var vc = self.roomVCMap[roomId]
-        if let _ = vc {
-            if origVC == vc {
-                return cell
+        if let vc = origVC {
+            if vc.room?.roomId == room.roomId {
+//                vc.loadingType = .idle
+            } else {
+                vc.loadingType = .idle
+                showLogger.info("replace room from \(vc.room?.roomId ?? "") to \(room.roomId ?? "")", context: kShowLogBaseContext)
+                vc.room = room
             }
-            
-            vc?.view.removeFromSuperview()
         } else {
-            vc = ShowLiveViewController(agoraKitManager: self.agoraKitManager)
-            vc?.audiencePresetType = self.audiencePresetType
-//            vc?.selectedResolution = self.selectedResolution
-            vc?.room = room
-            vc?.loadingType = .preload
-            vc?.pagesVC = self
+            let vc = ShowLiveViewController(agoraKitManager: self.agoraKitManager)
+            vc.audiencePresetType = self.audiencePresetType
+//            vc.selectedResolution = self.selectedResolution
+            vc.room = room
+            
+            vc.view.frame = self.view.bounds
+            vc.view.tag = kShowLiveRoomViewTag
+            cell.contentView.addSubview(vc.view)
+            self.addChild(vc)
+            roomVCCache.insert(vc)
+            origVC = vc
+            vc.pagesVC = self
         }
-        
-        guard let vc = vc else {
-            return cell
-        }
-        if let origVC = origVC {
-            origVC.view.removeFromSuperview()
-            origVC.removeFromParent()
-            origVC.loadingType = .idle
-            AppContext.unloadShowServiceImp(origVC.room?.roomId ?? "")
-            self.roomVCMap[origVC.room?.roomId ?? ""] = nil
-            showLogger.info("remove cache vc: \(origVC.room?.roomId ?? "") cache vc count:\(self.roomVCMap.count)")
-        }
-        
-        vc.view.frame = self.view.bounds
-        vc.view.tag = kShowLiveRoomViewTag
-        cell.contentView.addSubview(vc.view)
-        self.addChild(vc)
-        self.roomVCMap[roomId] = vc
+        origVC?.loadingType = .preload
         
         return cell
+        
+        
+//        var vc = self.roomVCMap[roomId]
+//        if let _ = vc {
+//            if origVC == vc {
+//                vc?.loadingType = .preload
+//                return cell
+//            }
+//
+//            vc?.view.removeFromSuperview()
+//        } else {
+//            vc = ShowLiveViewController(agoraKitManager: self.agoraKitManager)
+//            vc?.audiencePresetType = self.audiencePresetType
+//            vc?.selectedResolution = self.selectedResolution
+//            vc?.room = room
+//        }
+//
+//        guard let vc = vc else {
+//            assert(false, "fatal error")
+//            return cell
+//        }
+//        if let origVC = origVC {
+//            origVC.view.removeFromSuperview()
+//            origVC.removeFromParent()
+//            origVC.loadingType = .idle
+//            AppContext.unloadShowServiceImp(origVC.room?.roomId ?? "")
+////            self.roomVCMap[origVC.room?.roomId ?? ""] = nil
+//            showLogger.info("remove cache vc: \(origVC.room?.roomId ?? "") cache vc count:\(self.roomVCMap.count)")
+//        }
+//
+//        vc.view.frame = self.view.bounds
+//        vc.view.tag = kShowLiveRoomViewTag
+//        cell.contentView.addSubview(vc.view)
+//        self.addChild(vc)
+//        self.roomVCMap[roomId] = vc
+//        vc.loadingType = .preload
+//
+//        return cell
     }
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
@@ -211,8 +239,8 @@ extension ShowLivePagesViewController: UICollectionViewDelegate, UICollectionVie
     
     func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
         let idx = realCellIndex(with: indexPath.row)
-        showLogger.info("collectionView willDisplay: \(idx)/\(indexPath.row)  cache vc count: \(self.roomVCMap.count)")
-        guard let room = self.roomList?[idx], let roomId = room.roomId, let vc = self.roomVCMap[roomId] else {
+        showLogger.info("collectionView willDisplay: \(idx)/\(indexPath.row)  cache vc count: \(self.roomVCCache.count)")
+        guard let vc = cell.contentView.viewWithTag(kShowLiveRoomViewTag)?.next as? ShowLiveViewController else {
 //            assert(false, "room at index \(idx) not found")
             return
         }
@@ -222,8 +250,8 @@ extension ShowLivePagesViewController: UICollectionViewDelegate, UICollectionVie
     
     func collectionView(_ collectionView: UICollectionView, didEndDisplaying cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
         let idx = realCellIndex(with: indexPath.row)
-        showLogger.info("collectionView didEndDisplaying: \(idx)/\(indexPath.row)  cache vc count: \(self.roomVCMap.count)")
-        guard let room = self.roomList?[idx], let roomId = room.roomId, let vc = self.roomVCMap[roomId] else {
+        showLogger.info("collectionView didEndDisplaying: \(idx)/\(indexPath.row)  cache vc count: \(self.roomVCCache.count)")
+        guard let vc = cell.contentView.viewWithTag(kShowLiveRoomViewTag)?.next as? ShowLiveViewController else {
 //            assert(false, "room at index \(idx) not found")
             return
         }

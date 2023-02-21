@@ -237,6 +237,11 @@ extension ShowRoomLiveView {
         tableView.reloadData()
         tableView.scrollToTop()
     }
+    
+    func cleanChatModel() {
+        chatArray.removeAll()
+        tableView.reloadData()
+    }
 }
 
 extension ShowRoomLiveView: UITableViewDelegate, UITableViewDataSource {

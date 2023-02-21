@@ -12,7 +12,7 @@ import SwiftUI
 class ShowLiveViewController: UIViewController {
     weak var pagesVC: ShowLivePagesViewController?
     var room: ShowRoomListModel?
-    var loadingType: ShowRTCLoadingType = .preload {
+    var loadingType: ShowRTCLoadingType = .idle {
         didSet {
             if loadingType == oldValue {
                 return
@@ -233,32 +233,6 @@ class ShowLiveViewController: UIViewController {
         super.viewDidLoad()
         view.layer.contents = UIImage.show_sceneImage(name: "show_live_pkbg")?.cgImage
         setupUI()
-        
-        guard let room = room else {return}
-        if room.ownerId == VLUserCenter.user.id {
-            self.joinChannel()
-            if self.loadingType == .loading {
-                self.updateLoadingType(loadingType: self.loadingType)
-            }
-            self._subscribeServiceEvent()
-            UIApplication.shared.isIdleTimerDisabled = true
-        } else {
-            AppContext.showServiceImp(room.roomId!).joinRoom(room: room) {[weak self] error, detailModel in
-                guard let self = self else { return }
-                if let _ = error {
-    //                ToastView.show(text: error.localizedDescription)
-                    self.onRoomExpired()
-                    return
-                }
-                showLogger.info("self.loadingType ==== \(self.loadingType)")
-                self.joinChannel(needUpdateCavans: self.loadingType == .loading)
-                if self.loadingType == .loading {
-                    self.updateLoadingType(loadingType: self.loadingType)
-                }
-                self._subscribeServiceEvent()
-                UIApplication.shared.isIdleTimerDisabled = true
-            }
-        }
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -268,7 +242,6 @@ class ShowLiveViewController: UIViewController {
     
     private func setupUI(){
         navigationController?.isNavigationBarHidden = true
-        liveView.room = room
 //        if role == .audience {
 //            liveView.roomUserCount += 1
 //        }
@@ -278,14 +251,20 @@ class ShowLiveViewController: UIViewController {
         }
     }
     
-    func leaveRoom(){
+    func leaveRoom(completion: @escaping (()->())){
         agoraKitManager.setRtcDelegate(delegate: nil, roomId: roomId)
         agoraKitManager.cleanCapture()
         agoraKitManager.leaveChannelEx(roomId: roomId, channelId: roomId)
         AppContext.showServiceImp(roomId).unsubscribeEvent(delegate: self)
         
-        AppContext.showServiceImp(roomId).leaveRoom {[weak self] error in
-            self?.dismiss(animated: true) {
+        AppContext.showServiceImp(roomId).leaveRoom { error in
+            completion()
+        }
+    }
+    
+    private func leaveRoomAndExit() {
+        leaveRoom {
+            self.dismiss(animated: true) {
             }
         }
     }
@@ -324,7 +303,7 @@ class ShowLiveViewController: UIViewController {
         let showMsg = ShowMessage()
         showMsg.userId = VLUserCenter.user.id
         showMsg.userName = VLUserCenter.user.name
-        showMsg.message = text
+        showMsg.message = "\(text)  \(roomId)"
         showMsg.createAt = Date().millionsecondSince1970()
         
         AppContext.showServiceImp(roomId).sendChatMessage(message: showMsg) { error in
@@ -343,8 +322,36 @@ extension ShowLiveViewController {
         }
     }
     
-
-    func updateLoadingType(loadingType: ShowRTCLoadingType) {
+    private func joinRoom() {
+        guard let room = room else {return}
+        if room.ownerId == VLUserCenter.user.id {
+            self.joinChannel()
+            if self.loadingType == .loading {
+                self.updateLoadingType(loadingType: self.loadingType)
+            }
+            self._subscribeServiceEvent()
+            UIApplication.shared.isIdleTimerDisabled = true
+        } else {
+            AppContext.showServiceImp(room.roomId!).joinRoom(room: room) {[weak self] error, detailModel in
+                guard let self = self else { return }
+                if let _ = error {
+    //                ToastView.show(text: error.localizedDescription)
+                    self.onRoomExpired()
+                    return
+                }
+                
+                self.joinChannel()
+                if self.loadingType == .loading {
+                    self.updateLoadingType(loadingType: self.loadingType)
+                }
+                self._subscribeServiceEvent()
+                UIApplication.shared.isIdleTimerDisabled = true
+            }
+        }
+    }
+    
+    private func updateLoadingType(loadingType: ShowRTCLoadingType) {
+        showLogger.info("room(\(roomId)) updateLoadingType: \(loadingType.rawValue)", context: kShowLogBaseContext)
         agoraKitManager.updateLoadingType(roomId: roomId, channelId: roomId, loadingType: loadingType)
         if let targetRoomId = currentInteraction?.roomId, targetRoomId != roomId {
             agoraKitManager.updateLoadingType(roomId: roomId, channelId: targetRoomId, loadingType: loadingType)
@@ -358,12 +365,18 @@ extension ShowLiveViewController {
             //TODO: need to optimize
             updateVideoCavans()
         } else if loadingType == .preload {
+            liveView.room = room
+            joinRoom()
             AppContext.showServiceImp(roomId).deinitRoom { error in
                 
             }
             sendMessageWithText("leave_live_room".show_localized)
         } else {
-            leaveRoom()
+            AppContext.unloadShowServiceImp(roomId)
+            liveView.cleanChatModel()
+            //TODO: clean more view cache?
+            leaveRoom {
+            }
         }
     }
     
@@ -440,7 +453,7 @@ extension ShowLiveViewController: ShowSubscribeServiceProtocol {
             if self?.presentedViewController != nil {
                 self?.presentedViewController?.dismiss(animated: false)
             }
-            self?.leaveRoom()
+            self?.leaveRoomAndExit()
         }
     }
     
@@ -911,10 +924,10 @@ extension ShowLiveViewController: ShowRoomLiveViewDelegate {
     func onClickCloseButton() {
         if role == .broadcaster {
             showAlert(message: "show_alert_live_end_title".show_localized) {[weak self] in
-                self?.leaveRoom()
+                self?.leaveRoomAndExit()
             }
         }else {
-            leaveRoom()
+            leaveRoomAndExit()
         }
     }
     
@@ -968,7 +981,7 @@ extension ShowLiveViewController: ShowRoomLiveViewDelegate {
 extension ShowLiveViewController {
     private func showError(title: String, errMsg: String) {
         showAlert(title: title, message: errMsg) { [weak self] in
-            self?.leaveRoom()
+            self?.leaveRoomAndExit()
         }
     }
 }
