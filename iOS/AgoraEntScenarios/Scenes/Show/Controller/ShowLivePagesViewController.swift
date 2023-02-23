@@ -176,7 +176,7 @@ extension ShowLivePagesViewController: UICollectionViewDelegate, UICollectionVie
 //                vc.loadingType = .idle
             } else {
                 vc.loadingType = .idle
-                showLogger.info("replace room from \(vc.room?.roomId ?? "") to \(room.roomId ?? "")", context: kShowLogBaseContext)
+                showLogger.info("replace room from \(vc.room?.roomId ?? "") to \(room.roomId)", context: kShowLogBaseContext)
                 vc.room = room
             }
         } else {
