@@ -9,8 +9,13 @@ import UIKit
 import AgoraRtcKit
 import SwiftUI
 
+protocol ShowLiveViewControllerDelegate: NSObjectProtocol {
+    func currentUserIsOnSeat()
+    func currentUserIsOffSeat()
+}
+
 class ShowLiveViewController: UIViewController {
-    weak var pagesVC: ShowLivePagesViewController?
+    weak var delegate: ShowLiveViewControllerDelegate?
     var room: ShowRoomListModel?
     var loadingType: ShowRTCLoadingType = .idle {
         didSet {
@@ -240,6 +245,15 @@ class ShowLiveViewController: UIViewController {
         navigationController?.interactivePopGestureRecognizer?.isEnabled = false
     }
     
+    private func defaultConfig(){
+        if AppContext.shared.isDebugMode {
+            guard let room = room else {return}
+            if room.ownerId != VLUserCenter.user.id {
+                agoraKitManager.debugDefaultAudienceSetting()
+            }
+        }
+    }
+    
     private func setupUI(){
         navigationController?.isNavigationBarHidden = true
 //        if role == .audience {
@@ -282,7 +296,8 @@ class ShowLiveViewController: UIViewController {
                                       targetChannelId: channelId,
                                       ownerId: uid,
                                       options: self.channelOptions,
-                                      role: role) {
+                                      role: role) { [weak self] in
+            guard let self = self else { return }
             if needUpdateCavans {
                 if self.role == .audience {
                     self.agoraKitManager.setupRemoteVideo(channelId: channelId,
@@ -293,7 +308,7 @@ class ShowLiveViewController: UIViewController {
                 }
             }
         }
-        liveView.canvasView.setLocalUserInfo(name: VLUserCenter.user.name)
+        liveView.canvasView.setLocalUserInfo(name: VLUserCenter.user.name, img: VLUserCenter.user.headUrl)
         
         self.muteLocalVideo = false
         self.muteLocalAudio = false
@@ -323,6 +338,7 @@ extension ShowLiveViewController {
     }
     
     private func joinRoom() {
+        defaultConfig()
         guard let room = room else {return}
         if room.ownerId == VLUserCenter.user.id {
             self.joinChannel()
@@ -332,15 +348,17 @@ extension ShowLiveViewController {
             self._subscribeServiceEvent()
             UIApplication.shared.isIdleTimerDisabled = true
         } else {
-            AppContext.showServiceImp(room.roomId!).joinRoom(room: room) {[weak self] error, detailModel in
+            AppContext.showServiceImp(room.roomId).joinRoom(room: room) {[weak self] error, detailModel in
                 guard let self = self else { return }
-                if let _ = error {
+                if let err = error {
     //                ToastView.show(text: error.localizedDescription)
-                    self.onRoomExpired()
+                    showLogger.info(" finishAlertVC joinRoom : roomid = \(room.roomId), error = \(err) ")
+//                    self.onRoomExpired()
+                    self._ensureRoomIsExst(roomId: room.roomId)
                     return
                 }
-                
-                self.joinChannel()
+                showLogger.info("self.loadingType ==== \(self.loadingType)")
+                self.joinChannel(needUpdateCavans: self.loadingType == .loading)
                 if self.loadingType == .loading {
                     self.updateLoadingType(loadingType: self.loadingType)
                 }
@@ -398,6 +416,24 @@ extension ShowLiveViewController {
 
 //MARK: service subscribe
 extension ShowLiveViewController: ShowSubscribeServiceProtocol {
+    
+    private func _ensureRoomIsExst(roomId: String) {
+        AppContext.showServiceImp("").getRoomList(page: 1) { [weak self] error, roomList in
+            guard let self = self else { return }
+            guard let list = roomList else {
+                self.onRoomExpired()
+                return
+            }
+            for item in list {
+                let aRoomId = item.roomId
+                if aRoomId == roomId {
+                    return
+                }
+            }
+            self.onRoomExpired()
+        }
+    }
+    
     private func _subscribeServiceEvent() {
         let service = AppContext.showServiceImp(roomId)
         
@@ -467,6 +503,7 @@ extension ShowLiveViewController: ShowSubscribeServiceProtocol {
     
     func onUserLeftRoom(user: ShowUser) {
         if user.userId == room?.ownerId {
+            showLogger.info(" finishAlertVC onUserLeftRoom : roomid = \(roomId)")
             onRoomExpired()
         }
     }
@@ -487,7 +524,7 @@ extension ShowLiveViewController: ShowSubscribeServiceProtocol {
         //TODO: migration to interaction did start
         if apply.status == .accepted {
             liveView.canvasView.canvasType = .joint_broadcasting
-            liveView.canvasView.setRemoteUserInfo(name: apply.userName ?? "")
+            liveView.canvasView.setRemoteUserInfo(name: apply.userName ?? "", img: apply.avatar)
 //            if apply.userId == VLUserCenter.user.id {
 //                agoraKitManager.switchRole(role: .broadcaster,
 //                                           uid: apply.userId,
@@ -561,7 +598,7 @@ extension ShowLiveViewController: ShowSubscribeServiceProtocol {
 
     func onMicSeatInvitationAccepted(invitation: ShowMicSeatInvitation) {
 //        liveView.canvasView.canvasType = .joint_broadcasting
-        liveView.canvasView.setRemoteUserInfo(name: invitation.userName ?? "")
+        liveView.canvasView.setRemoteUserInfo(name: invitation.userName ?? "", img: invitation.avatar)
 //        ToastView.show(text: "seat invitation \(invitation.userId ?? "") did accept")
 //        guard invitation.userId == VLUserCenter.user.id else { return }
 //        agoraKitManager.switchRole(role: .broadcaster,
@@ -584,7 +621,7 @@ extension ShowLiveViewController: ShowSubscribeServiceProtocol {
         }
         if invitation.fromRoomId == room?.roomId {
             //send invitation
-            createPKInvitationMap[invitation.roomId ?? ""] = invitation
+            createPKInvitationMap[invitation.roomId] = invitation
             pkInviteView.createPKInvitationMap = createPKInvitationMap
             
             return
@@ -616,7 +653,7 @@ extension ShowLiveViewController: ShowSubscribeServiceProtocol {
         
         if invitation.fromRoomId == room?.roomId {
             //send invitation
-            createPKInvitationMap[invitation.roomId ?? ""] = invitation
+            createPKInvitationMap[invitation.roomId] = invitation
             pkInviteView.createPKInvitationMap = createPKInvitationMap
             
             return
@@ -632,7 +669,7 @@ extension ShowLiveViewController: ShowSubscribeServiceProtocol {
         
         if invitation.fromRoomId == room?.roomId {
             //send invitation
-            createPKInvitationMap[invitation.roomId ?? ""] = nil
+            createPKInvitationMap[invitation.roomId] = nil
             pkInviteView.createPKInvitationMap = createPKInvitationMap
             return
         }
@@ -670,12 +707,10 @@ extension ShowLiveViewController: ShowSubscribeServiceProtocol {
     private func _onStartInteraction(interaction: ShowInteractionInfo) {
         switch interaction.interactStatus {
         case .pking:
-            guard let interactionRoomId = interaction.roomId else {
-                assert(false, "interaction room id is empty")
-                return
-            }
+            let interactionRoomId = interaction.roomId
+            if interactionRoomId.isEmpty { return }
             if roomId != interaction.roomId {
-                let uid = UInt(interaction.userId!)!
+                let uid = UInt(interaction.userId)!
                 agoraKitManager.updateVideoProfileForMode(.pk)
                 currentChannelId = roomId
                 agoraKitManager.joinChannelEx(currentChannelId: roomId,
@@ -711,7 +746,7 @@ extension ShowLiveViewController: ShowSubscribeServiceProtocol {
             liveView.bottomBar.linkButton.isShowRedDot = false
             AlertManager.hiddenView()
             if role == .broadcaster {
-                pagesVC?.isScrollEnable = false
+                self.delegate?.currentUserIsOnSeat()
             }
         default:
             break
@@ -722,9 +757,9 @@ extension ShowLiveViewController: ShowSubscribeServiceProtocol {
         switch interaction.interactStatus {
         case .pking:
             agoraKitManager.updateVideoProfileForMode(.single)
-            agoraKitManager.leaveChannelEx(roomId: self.roomId, channelId: interaction.roomId ?? "")
+            agoraKitManager.leaveChannelEx(roomId: self.roomId, channelId: interaction.roomId)
             liveView.canvasView.canvasType = .none
-            liveView.canvasView.setRemoteUserInfo(name: "")
+            liveView.canvasView.setRemoteUserInfo(name: interaction.userName ?? "")
 //            if interaction.userId == VLUserCenter.user.id {
 //                let options = self.channelOptions
 //                options.publishCameraTrack = false
@@ -734,7 +769,7 @@ extension ShowLiveViewController: ShowSubscribeServiceProtocol {
 //                self.muteLocalVideo = true
 //            }
         case .onSeat:
-            liveView.canvasView.setRemoteUserInfo(name: "")
+            liveView.canvasView.setRemoteUserInfo(name: interaction.userName ?? "")
             liveView.canvasView.canvasType = .none
             liveView.bottomBar.linkButton.isShowRedDot = false
             liveView.bottomBar.linkButton.isSelected = false
@@ -746,7 +781,7 @@ extension ShowLiveViewController: ShowSubscribeServiceProtocol {
                                        options: self.channelOptions,
                                        uid: uid,
                                        canvasView: canvasView)
-            pagesVC?.isScrollEnable = true
+            self.delegate?.currentUserIsOffSeat()
             
         default:
             break
@@ -792,36 +827,39 @@ extension ShowLiveViewController: AgoraRtcEngineDelegate {
 
     func rtcEngine(_ engine: AgoraRtcEngineKit, reportRtcStats stats: AgoraChannelStats) {
 //        realTimeView.statsInfo?.updateChannelStats(stats)
-        realTimeView.localStatsInfo?.updateChannelStats(stats)
-        realTimeView.remoteStatsInfo?.updateChannelStats(stats)
+//        realTimeView.sendStatsInfo?.updateChannelStats(stats)
+//        realTimeView.receiveStatsInfo?.updateChannelStats(stats)
+//        resetRealTimeIfNeeded()
     }
 
     func rtcEngine(_ engine: AgoraRtcEngineKit, localAudioStats stats: AgoraRtcLocalAudioStats) {
 //        realTimeView.statsInfo?.updateLocalAudioStats(stats)
-        realTimeView.localStatsInfo?.updateLocalAudioStats(stats)
-        realTimeView.remoteStatsInfo?.updateLocalAudioStats(stats)
-
+//        realTimeView.sendStatsInfo?.updateLocalAudioStats(stats)
+//        realTimeView.receiveStatsInfo?.updateLocalAudioStats(stats)
+//        resetRealTimeIfNeeded()
     }
     
     func rtcEngine(_ engine: AgoraRtcEngineKit, localVideoStats stats: AgoraRtcLocalVideoStats, sourceType: AgoraVideoSourceType) {
 //        realTimeView.statsInfo?.updateLocalVideoStats(stats)
-        realTimeView.localStatsInfo?.updateLocalVideoStats(stats)
-        realTimeView.remoteStatsInfo?.updateLocalVideoStats(stats)
+//        realTimeView.sendStatsInfo?.updateLocalVideoStats(stats)
+//        realTimeView.receiveStatsInfo?.updateLocalVideoStats(stats)
+//        resetRealTimeIfNeeded()
         showLogger.info("localVideoStats  width = \(stats.encodedFrameWidth), height = \(stats.encodedFrameHeight)")
 
     }
     
     func rtcEngine(_ engine: AgoraRtcEngineKit, remoteVideoStats stats: AgoraRtcRemoteVideoStats) {
 //        realTimeView.statsInfo?.updateVideoStats(stats)
-        realTimeView.localStatsInfo?.updateVideoStats(stats)
-        realTimeView.remoteStatsInfo?.updateVideoStats(stats)
+//        realTimeView.sendStatsInfo?.updateVideoStats(stats)
+//        realTimeView.receiveStatsInfo?.updateVideoStats(stats)
+//        resetRealTimeIfNeeded()
 
-        showLogger.info("room.ownderid = \(String(describing: room?.ownerId?.debugDescription)) width = \(stats.width), height = \(stats.height)")
+        showLogger.info("room.ownderid = \(String(describing: room?.ownerId.debugDescription)) width = \(stats.width), height = \(stats.height)")
         if let audiencePresetType = audiencePresetType {
             let mode: ShowMode = interactionStatus == .idle ? .single : .pk
             // 防止多次调用
             if mode != currentMode || stats.width != remoteVideoWidth {
-                showLogger.info(" [\(Date())] ----- setSuperResolutionOn remoteVideoStats roomId = \(roomId) = \(String(describing: room?.ownerId?.debugDescription)) width = \(stats.width), height = \(stats.height)")
+                showLogger.info(" [\(Date())] ----- setSuperResolutionOn remoteVideoStats roomId = \(roomId) = \(String(describing: room?.ownerId.debugDescription)) width = \(stats.width), height = \(stats.height)")
                 agoraKitManager.setSuperResolutionForAudienceType(presetType: audiencePresetType, videoWidth: Int(stats.width), mode: mode)
                 currentMode = mode
                 remoteVideoWidth = stats.width
@@ -834,22 +872,23 @@ extension ShowLiveViewController: AgoraRtcEngineDelegate {
     
     func rtcEngine(_ engine: AgoraRtcEngineKit, remoteAudioStats stats: AgoraRtcRemoteAudioStats) {
 //        realTimeView.statsInfo?.updateAudioStats(stats)
-        realTimeView.localStatsInfo?.updateAudioStats(stats)
-        realTimeView.remoteStatsInfo?.updateAudioStats(stats)
-
+//        realTimeView.sendStatsInfo?.updateAudioStats(stats)
+//        realTimeView.receiveStatsInfo?.updateAudioStats(stats)
+//        resetRealTimeIfNeeded()
     }
     
     func rtcEngine(_ engine: AgoraRtcEngineKit, uplinkNetworkInfoUpdate networkInfo: AgoraUplinkNetworkInfo) {
 //        realTimeView.statsInfo?.updateUplinkNetworkInfo(networkInfo)
-        realTimeView.localStatsInfo?.updateUplinkNetworkInfo(networkInfo)
-        realTimeView.remoteStatsInfo?.updateUplinkNetworkInfo(networkInfo)
+//        realTimeView.sendStatsInfo?.updateUplinkNetworkInfo(networkInfo)
+//        realTimeView.receiveStatsInfo?.updateUplinkNetworkInfo(networkInfo)
+//        resetRealTimeIfNeeded()
     }
     
     func rtcEngine(_ engine: AgoraRtcEngineKit, downlinkNetworkInfoUpdate networkInfo: AgoraDownlinkNetworkInfo) {
 //        realTimeView.statsInfo?.updateDownlinkNetworkInfo(networkInfo)
-        realTimeView.localStatsInfo?.updateDownlinkNetworkInfo(networkInfo)
-        realTimeView.remoteStatsInfo?.updateDownlinkNetworkInfo(networkInfo)
-
+//        realTimeView.sendStatsInfo?.updateDownlinkNetworkInfo(networkInfo)
+//        realTimeView.receiveStatsInfo?.updateDownlinkNetworkInfo(networkInfo)
+//        resetRealTimeIfNeeded()
     }
     
     func rtcEngine(_ engine: AgoraRtcEngineKit, contentInspectResult result: AgoraContentInspectResult) {
@@ -859,7 +898,7 @@ extension ShowLiveViewController: AgoraRtcEngineDelegate {
     }
     
     func rtcEngine(_ engine: AgoraRtcEngineKit, videoSizeChangedOf sourceType: AgoraVideoSourceType, uid: UInt, size: CGSize, rotation: Int) {
-        showLogger.info(" [\(Date())] ----- setSuperResolutionOn videoSizeChangedOf roomId = \(roomId) = \(String(describing: room?.ownerId?.debugDescription)) width = \(size.width), height = \(size.height), sourceType = \(sourceType.rawValue)")
+        showLogger.info(" [\(Date())] ----- setSuperResolutionOn videoSizeChangedOf roomId = \(roomId) = \(String(describing: room?.ownerId.debugDescription)) width = \(size.width), height = \(size.height), sourceType = \(sourceType.rawValue)")
     }
     
     func rtcEngine(_ engine: AgoraRtcEngineKit,
@@ -977,6 +1016,15 @@ extension ShowLiveViewController: ShowRoomLiveViewDelegate {
     
 }
 
+extension ShowLiveViewController {
+    
+    private func resetRealTimeIfNeeded() {
+        if role == .broadcaster && interactionStatus != .pking {
+            realTimeView.cleanRemoteDescription()
+        }
+    }
+}
+
 
 extension ShowLiveViewController {
     private func showError(title: String, errMsg: String) {
@@ -1071,7 +1119,7 @@ extension ShowLiveViewController: ShowToolMenuViewControllerDelegate {
             guard let wSelf = self else { return }
             if AppContext.shared.isDebugMode {
                 let vc = ShowDebugSettingVC()
-                vc.isOutside = true
+                vc.isBroadcastor = wSelf.role == .broadcaster
                 vc.settingManager = wSelf.agoraKitManager
                 wSelf.navigationController?.pushViewController(vc, animated: true)
             }else {

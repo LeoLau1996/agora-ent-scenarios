@@ -21,7 +21,9 @@ class ShowLivePagesViewController: ViewController {
     
     lazy var agoraKitManager: ShowAgoraKitManager = {
         let manager = ShowAgoraKitManager()
-        manager.defaultSetting()
+        if AppContext.shared.isDebugMode == false {
+            manager.defaultSetting()            
+        }
         return manager
     }()
     
@@ -75,13 +77,14 @@ extension ShowLivePagesViewController {
         showLogger.info("preloadEnterRoom: \(prevIdx) and \(nextIdx)", context: kShowLogBaseContext)
         preloadIdxs.forEach { idx in
             let room = roomList[idx]
-            guard let roomId = room.roomId else {return}
+            let roomId = room.roomId
+            if roomId.isEmpty {return}
             let vc = ShowLiveViewController(agoraKitManager: self.agoraKitManager)
             vc.audiencePresetType = self.audiencePresetType
 //            vc?.selectedResolution = self.selectedResolution
             vc.room = room
             vc.loadingType = .preload
-            vc.pagesVC = self
+            vc.delegate = self
 //            self.roomVCMap[roomId] = vc
             //TODO: invoke viewdidload to join channel
             vc.view.frame = self.view.bounds
@@ -188,7 +191,7 @@ extension ShowLivePagesViewController: UICollectionViewDelegate, UICollectionVie
             self.addChild(vc)
             roomVCCache.insert(vc)
             origVC = vc
-            vc.pagesVC = self
+            vc.delegate = self
         }
         origVC?.loadingType = .preload
         
@@ -278,5 +281,15 @@ extension ShowLivePagesViewController {
         get{
             return collectionView.isScrollEnabled
         }
+    }
+}
+
+extension ShowLivePagesViewController: ShowLiveViewControllerDelegate {
+    func currentUserIsOnSeat() {
+        isScrollEnable = false
+    }
+    
+    func currentUserIsOffSeat() {
+        isScrollEnable = true
     }
 }

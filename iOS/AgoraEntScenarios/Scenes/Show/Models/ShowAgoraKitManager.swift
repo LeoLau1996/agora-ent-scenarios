@@ -82,6 +82,11 @@ class ShowAgoraKitManager: NSObject {
     
     let videoEncoderConfig = AgoraVideoEncoderConfiguration()
     
+    var exposureRangeX: Int?
+    var exposureRangeY: Int?
+    var matrixCoefficientsExt: Int?
+    var videoFullrangeExt: Int?
+    
     //[ex channelId: connection]
     private var exConnectionMap: [String: AgoraRtcConnection] = [:]
     //[ex channelId: [room id: status]]
@@ -191,7 +196,7 @@ class ShowAgoraKitManager: NSObject {
             if role == .audience {
                 mediaOptions.audienceLatencyLevel = .lowLatency
             }else{
-                agoraKit.setCameraCapturerConfiguration(captureConfig)
+//                updateCameraCaptureConfiguration()
                 updateVideoEncoderConfigurationForConnenction(currentChannelId: currentChannelId)
             }
         
@@ -200,7 +205,8 @@ class ShowAgoraKitManager: NSObject {
             connection.localUid = UInt(VLUserCenter.user.id) ?? 0
             
             //TODO: retain cycle in joinChannelEx
-            let proxy = ShowAgoraExProxy(delegate: delegateMap[currentChannelId])
+//            let proxy = ShowAgoraExProxy(delegate: delegateMap[currentChannelId])
+            let proxy = delegateMap[currentChannelId]
             let date = Date()
             showLogger.info("try to join room[\(connection.channelId)] ex uid: \(connection.localUid)", context: kShowLogBaseContext)
             let ret =
@@ -235,10 +241,14 @@ class ShowAgoraKitManager: NSObject {
     //MARK: public method
     func setRtcDelegate(delegate: AgoraRtcEngineDelegate?, roomId: String) {
         guard let delegate = delegate else {
-            delegateMap[roomId] = nil
+            delegateMap[roomId]?.delegate = nil
             return
         }
-        let proxy = ShowAgoraExProxy(delegate:delegate)
+        var proxy = delegateMap[roomId]
+        if proxy == nil {
+            proxy = ShowAgoraExProxy(delegate: delegate)
+        }
+        proxy?.delegate = delegate
         
         delegateMap[roomId] = proxy
     }
@@ -257,7 +267,7 @@ class ShowAgoraKitManager: NSObject {
         NetworkManager.shared.generateToken(channelName: channelId,
                                             uid: UserInfo.userId,
                                             tokenType: .token007,
-                                            type: .rtc) { token in
+                                            type: .rtc) {[weak self] token in
             guard let token = token else {
                 showLogger.error("renewToken fail: token is empty")
                 return
@@ -265,7 +275,7 @@ class ShowAgoraKitManager: NSObject {
             let option = AgoraRtcChannelMediaOptions()
             option.token = token
             AppContext.shared.rtcTokenMap?[channelId] = token
-            self.updateChannelEx(channelId: channelId, options: option)
+            self?.updateChannelEx(channelId: channelId, options: option)
         }
     }
     
@@ -354,11 +364,19 @@ class ShowAgoraKitManager: NSObject {
     /// 设置采集分辨率
     /// - Parameter size: 分辨率
     func setCaptureVideoDimensions(_ size: CGSize){
-        agoraKit.disableVideo()
         captureConfig.dimensions = CGSize(width: size.width, height: size.height)
+        updateCameraCaptureConfiguration()
+    }
+    
+    /// 更新采集参数
+    /// - Returns:
+    func updateCameraCaptureConfiguration() {
+//        agoraKit.disableVideo()
+        agoraKit.stopPreview()
         let ret = agoraKit.setCameraCapturerConfiguration(captureConfig)
-        agoraKit.enableVideo()
-        showLogger.info("setCaptureVideoDimensions width = \(size.width), height = \(size.height), ret = \(ret)")
+//        agoraKit.enableVideo()
+        agoraKit.startPreview()
+        showLogger.info("setCaptureVideoDimensions = \(captureConfig.dimensions), framerate = \(captureConfig.frameRate)  ret = \(ret)")
     }
     
     /// 设置编码分辨率
@@ -508,7 +526,9 @@ class ShowAgoraKitManager: NSObject {
 extension ShowAgoraKitManager: AgoraVideoFrameDelegate {
     
     func onCapture(_ videoFrame: AgoraOutputVideoFrame) -> Bool {
+        print("aaa onCapture1 w:\(CVPixelBufferGetWidth(videoFrame.pixelBuffer!)) h:\(CVPixelBufferGetHeight(videoFrame.pixelBuffer!))")
         videoFrame.pixelBuffer = BeautyManager.shareManager.processFrame(pixelBuffer: videoFrame.pixelBuffer)
+        print("aaa onCapture2 w:\(CVPixelBufferGetWidth(videoFrame.pixelBuffer!)) h:\(CVPixelBufferGetHeight(videoFrame.pixelBuffer!))")
         return true
     }
     
