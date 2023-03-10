@@ -98,6 +98,10 @@ sed -ie "s#$(sed -n '/AGORA_APP_ID/p' gradle.properties)#AGORA_APP_ID=${APP_ID}#
 sed -ie "s#$(sed -n '/AGORA_APP_CERTIFICATE/p' gradle.properties)#AGORA_APP_CERTIFICATE=${APP_CERT}#g" gradle.properties
 cat gradle.properties
 
+# config applicationId
+sed -ie "s#$(sed -n '/applicationId/p' gradle.properties)#applicationId ${packageName}#g" app/build.gradle
+cat app/build.gradle
+
 # config voice properties
 voicePropFile=scenes/voice/voice/voice_gradle.properties
 rm -f $voicePropFile
