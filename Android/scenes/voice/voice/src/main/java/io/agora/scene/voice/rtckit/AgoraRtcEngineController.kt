@@ -33,7 +33,7 @@ class AgoraRtcEngineController {
         val sSingle = AgoraRtcEngineController()
     }
 
-    private var rtcEngine: RtcEngineEx? = null
+    var rtcEngine: RtcEngineEx? = null
 
     private var micVolumeListener: RtcMicVolumeListener? = null
 

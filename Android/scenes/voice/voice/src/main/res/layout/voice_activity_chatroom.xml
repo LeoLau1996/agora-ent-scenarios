@@ -89,4 +89,32 @@
         app:layout_constraintBottom_toBottomOf="parent"
         />
 
+    <Button
+        android:id="@+id/btnRoom1"
+        android:layout_width="120dp"
+        android:layout_height="60dp"
+        android:text="加入房间1"
+        android:textSize="@dimen/voice_sp_16"
+        android:textAllCaps="false"
+        android:background="@color/voice_color_f7f8fb"
+        app:layout_constraintHorizontal_bias="0.25"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"/>
+
+    <Button
+        android:id="@+id/btnRoom2"
+        android:layout_width="120dp"
+        android:layout_height="60dp"
+        android:text="加入房间2"
+        android:textSize="@dimen/voice_sp_16"
+        android:textAllCaps="false"
+        android:background="@color/voice_color_f7f8fb"
+        app:layout_constraintHorizontal_bias="0.75"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"/>
+
 </androidx.constraintlayout.widget.ConstraintLayout>

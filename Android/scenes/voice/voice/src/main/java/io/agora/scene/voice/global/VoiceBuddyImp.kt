@@ -12,6 +12,8 @@ class VoiceBuddyImp : IVoiceBuddy {
 
     private var chatToken: String = ""
     private var rtcToken: String = ""
+    private var rtcToken1: String = ""
+    private var rtcToken2: String = ""
 
     override fun isBuildTest(): Boolean {
         return BuildConfig.voice_env_is_test
@@ -76,5 +78,22 @@ class VoiceBuddyImp : IVoiceBuddy {
 
     override fun setupChatToken(chatToken: String) {
         this.chatToken = chatToken
+    }
+
+
+    override fun setupRtcToken1(rtcToken: String) {
+        this.rtcToken1 = rtcToken
+    }
+
+    override fun rtcToken1(): String {
+        return rtcToken1
+    }
+
+    override fun setupRtcToken2(rtcToken: String) {
+        this.rtcToken2 = rtcToken
+    }
+
+    override fun rtcToken2(): String {
+        return rtcToken2
     }
 }

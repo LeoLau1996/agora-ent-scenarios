@@ -97,6 +97,12 @@ class ChatroomLiveActivity : BaseUiActivity<VoiceActivityChatroomBinding>(), Eas
         initData()
         initView()
         requestAudioPermission()
+        binding.btnRoom1.setOnClickListener {
+            roomObservableDelegate.joinSubRoom1()
+        }
+        binding.btnRoom2.setOnClickListener {
+            roomObservableDelegate.joinSubRoom2()
+        }
     }
 
     private fun initData() {
@@ -380,6 +386,8 @@ class ChatroomLiveActivity : BaseUiActivity<VoiceActivityChatroomBinding>(), Eas
                     roomKitBean,
                     binding.cTopView,
                     binding.rvChatroom2dMicLayout,
+                    binding.btnRoom1,
+                    binding.btnRoom2,
                     binding.chatBottom
                 )
             binding.rvChatroom2dMicLayout.setMyRtcUid(VoiceBuddyFactory.get().getVoiceBuddy().rtcUid())
@@ -408,6 +416,8 @@ class ChatroomLiveActivity : BaseUiActivity<VoiceActivityChatroomBinding>(), Eas
                     roomKitBean,
                     binding.cTopView,
                     binding.rvChatroom3dMicLayout,
+                    binding.btnRoom1,
+                    binding.btnRoom2,
                     binding.chatBottom
                 )
             binding.rvChatroom3dMicLayout.setMyRtcUid(VoiceBuddyFactory.get().getVoiceBuddy().rtcUid())

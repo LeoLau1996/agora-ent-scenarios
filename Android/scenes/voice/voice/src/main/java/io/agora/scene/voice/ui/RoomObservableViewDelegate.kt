@@ -1,12 +1,18 @@
 package io.agora.scene.voice.ui
 
+import android.app.Activity
 import android.os.Bundle
+import android.os.Debug
 import android.text.TextUtils
+import android.util.Log
 import android.view.View
+import android.widget.Button
 import android.widget.CompoundButton
+import android.widget.Toast
 import androidx.fragment.app.FragmentActivity
 import com.google.gson.reflect.TypeToken
 import io.agora.CallBack
+import io.agora.rtc2.*
 import io.agora.scene.voice.R
 import io.agora.scene.voice.global.VoiceBuddyFactory
 import io.agora.scene.voice.imkit.bean.ChatMessageData
@@ -48,6 +54,8 @@ class RoomObservableViewDelegate constructor(
     private val roomKitBean: RoomKitBean,
     private val iRoomTopView: IRoomLiveTopView, // 头部
     private val iRoomMicView: IRoomMicView, // 麦位
+    private val room1Button: Button,
+    private val room2Button: Button,
     private val chatPrimaryMenuView: ChatPrimaryMenuView, // 底部
 ) : IParserSource {
     companion object {
@@ -58,6 +66,18 @@ class RoomObservableViewDelegate constructor(
     private val micMap = mutableMapOf<Int, Int>()
 
     private var localUserMicInfo: VoiceMicInfoModel? = null
+        set(value) {
+            field = value
+            if (value != null) {
+                leaveSubRoom1()
+                leaveSubRoom2()
+                ToastTools.show(activity, "已经上麦了")
+
+                val option1 = ChannelMediaOptions()
+                option1.publishMicrophoneTrack = true
+                AgoraRtcEngineController.get().rtcEngine?.updateChannelMediaOptions(option1);
+            }
+        }
 
     /**举手dialog*/
     private var handsDialog: ChatroomHandsDialog? = null
@@ -72,6 +92,150 @@ class RoomObservableViewDelegate constructor(
 
     private fun localUserIndex(): Int {
         return localUserMicInfo?.micIndex ?: -1
+    }
+
+    private val subRoom1Connection: RtcConnection by lazy {
+        val channelID = roomKitBean.channelId + "123"
+        RtcConnection(channelID, VoiceBuddyFactory.get().getVoiceBuddy().rtcUid())
+    }
+
+    private val subRoom2Connection: RtcConnection by lazy {
+        val channelID = roomKitBean.channelId + "456"
+        RtcConnection(channelID, VoiceBuddyFactory.get().getVoiceBuddy().rtcUid())
+    }
+
+    private var inSubRoom: Int = 0
+        set(value) {
+            field = value
+            when (inSubRoom) {
+                0 -> {
+                    room1Button.text = "加入房间1"
+                    room2Button.text = "加入房间2"
+                }
+                1 -> {
+                    room1Button.text = "离开房间1"
+                    room2Button.text = "加入房间2"
+                }
+                2 -> {
+                    room1Button.text = "加入房间1"
+                    room2Button.text = "离开房间2"
+                }
+                else -> return
+            }
+        }
+
+    fun joinSubRoom1() {
+        when (inSubRoom) {
+            0 -> checkUserLeaveMic()
+            1 -> {
+                leaveSubRoom1()
+                return
+            }
+            2 -> leaveSubRoom2()
+            else -> return
+        }
+        AgoraRtcEngineController.get().rtcEngine?.muteAllRemoteAudioStreams(true);
+
+        val option1 = ChannelMediaOptions()
+        option1.publishMicrophoneTrack = false
+        AgoraRtcEngineController.get().rtcEngine?.updateChannelMediaOptions(option1);
+
+
+        val option = ChannelMediaOptions()
+        option.publishMicrophoneTrack = true
+        option.autoSubscribeAudio = true
+        option.clientRoleType = Constants.CLIENT_ROLE_BROADCASTER
+        option.enableAudioRecordingOrPlayout = true
+        AgoraRtcEngineController.get().rtcEngine?.enableLocalAudio(true)
+
+        val ret = AgoraRtcEngineController.get().rtcEngine?.joinChannelEx(
+            VoiceBuddyFactory.get().getVoiceBuddy().rtcToken1(),
+            subRoom1Connection,
+            option,
+            object: IRtcEngineEventHandler() {
+                override fun onJoinChannelSuccess(channel: String?, uid: Int, elapsed: Int) {
+                    super.onJoinChannelSuccess(channel, uid, elapsed)
+                    inSubRoom = 1
+                    ToastTools.show(activity, "加入房間 1 成功")
+                }
+
+                override fun onLeaveChannel(stats: RtcStats?) {
+                    super.onLeaveChannel(stats)
+                }
+            }
+        )
+        Log.d("AgoraChat: joinChannel ", ret.toString());
+    }
+
+    private fun leaveSubRoom1() {
+        if (inSubRoom == 1) {
+            AgoraRtcEngineController.get().rtcEngine?.muteAllRemoteAudioStreams(false)
+            AgoraRtcEngineController.get().rtcEngine?.leaveChannelEx(subRoom1Connection)
+
+            val option2 = ChannelMediaOptions()
+            option2.publishMicrophoneTrack = false
+            AgoraRtcEngineController.get().rtcEngine?.updateChannelMediaOptionsEx(option2, subRoom1Connection)
+
+            inSubRoom = 0
+            ToastTools.show(activity, "离开房间 1 成功")
+        }
+    }
+
+    fun joinSubRoom2() {
+        when (inSubRoom) {
+            0 -> checkUserLeaveMic()
+            1 -> leaveSubRoom1()
+            2 -> {
+                leaveSubRoom2()
+                return
+            }
+            else -> return
+        }
+
+        AgoraRtcEngineController.get().rtcEngine?.muteAllRemoteAudioStreams(true)
+
+        val option1 = ChannelMediaOptions()
+        option1.publishMicrophoneTrack = false
+        AgoraRtcEngineController.get().rtcEngine?.updateChannelMediaOptions(option1);
+
+
+        val option = ChannelMediaOptions()
+        option.publishMicrophoneTrack = true
+        option.autoSubscribeAudio = true
+        option.clientRoleType = Constants.CLIENT_ROLE_BROADCASTER
+        option.enableAudioRecordingOrPlayout = true
+
+        AgoraRtcEngineController.get().rtcEngine?.enableLocalAudio(true)
+        AgoraRtcEngineController.get().rtcEngine?.joinChannelEx(
+            VoiceBuddyFactory.get().getVoiceBuddy().rtcToken2(),
+            subRoom2Connection,
+            option,
+            object: IRtcEngineEventHandler() {
+                override fun onJoinChannelSuccess(channel: String?, uid: Int, elapsed: Int) {
+                    super.onJoinChannelSuccess(channel, uid, elapsed)
+                    inSubRoom = 2
+                    ToastTools.show(activity, "加入房间 2 成功")
+                }
+
+                override fun onLeaveChannel(stats: RtcStats?) {
+                    super.onLeaveChannel(stats)
+                }
+            }
+        )
+
+    }
+
+    private fun leaveSubRoom2() {
+        if (inSubRoom == 2) {
+            AgoraRtcEngineController.get().rtcEngine?.muteAllRemoteAudioStreams(false)
+            AgoraRtcEngineController.get().rtcEngine?.leaveChannelEx(subRoom2Connection)
+            inSubRoom = 0
+
+            val option2 = ChannelMediaOptions()
+            option2.publishMicrophoneTrack = false
+            AgoraRtcEngineController.get().rtcEngine?.updateChannelMediaOptionsEx(option2, subRoom2Connection)
+            ToastTools.show(activity, "离开房间 2 成功")
+        }
     }
 
     init {
@@ -596,7 +760,7 @@ class RoomObservableViewDelegate constructor(
      */
     fun onUserMicClick(micInfo: VoiceMicInfoModel) {
         val isMyself = TextUtils.equals(VoiceBuddyFactory.get().getVoiceBuddy().userId(), micInfo.member?.userId)
-        if (roomKitBean.isOwner || isMyself) { // 房主或者自己
+        if (isMyself) { // 房主或者自己
             val roomMicMangerDialog = RoomMicManagerSheetDialog().apply {
                 arguments = Bundle().apply {
                     putSerializable(RoomMicManagerSheetDialog.KEY_MIC_INFO, micInfo)
@@ -670,11 +834,12 @@ class RoomObservableViewDelegate constructor(
                         }
                     })
             } else {
-                if (isRequesting) {
-                    ToastTools.show(activity, activity.getString(R.string.voice_chatroom_mic_submit_sent))
-                } else {
-                    showMemberHandsDialog(micInfo.micIndex)
-                }
+                showAlertDialog("直接上麦？",
+                    object : CommonSheetAlertDialog.OnClickBottomListener {
+                        override fun onConfirmClick() {
+                            roomLivingViewModel.acceptMicSeatInvitation()
+                        }
+                    })
             }
         }
     }
@@ -990,7 +1155,7 @@ class RoomObservableViewDelegate constructor(
     fun checkUserLeaveMic() {
         val localUserIndex = localUserIndex()
         // 普通用户离开
-        if (localUserIndex > 0) {
+        if (localUserIndex >= 0) {
             roomLivingViewModel.leaveMic(localUserIndex)
         }
     }
