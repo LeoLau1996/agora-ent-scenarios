@@ -99,7 +99,7 @@ sed -ie "s#$(sed -n '/AGORA_APP_CERTIFICATE/p' gradle.properties)#AGORA_APP_CERT
 cat gradle.properties
 
 # config applicationId
-sed -ie "s#$(sed -n '/applicationId/p' gradle.properties)#applicationId ${packageName}#g" app/build.gradle
+sed -ie "s#$(sed -n '/applicationId/p' app/build.gradle)#applicationId ${packageName}#g" app/build.gradle
 cat app/build.gradle
 
 # config voice properties
